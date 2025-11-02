@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [System.Serializable]
 public class microgame
@@ -86,12 +87,21 @@ public class MicrogameManager : MonoBehaviour
 
     [Space]
     public bool winState;
+    public float gameSpeed = 1f;
 
     public GameObject[] controlIcons;
     public TMP_Text gameName;
 
     public bool devMode;
     public int devIndex;
+
+    [Space]
+    public float transAnimTime, transAnimProgress;
+    private float lastTAP;
+    public Transform bgTransform;
+    public CanvasGroup[] cGroups;
+    public AnimationCurve moveCurve, scaleCurve, alphaCurve;
+    public Transform[] moveLerpPoints;
 
     private void Awake()
     {
@@ -100,6 +110,34 @@ public class MicrogameManager : MonoBehaviour
         {
             microgames = cloneMGArray(microgameList);
             playMicrogame(devIndex);
+            transAnimProgress = transAnimTime;
+        }
+        bgTransform.gameObject.SetActive(true);
+    }
+    private void Update()
+    {
+        if (lastTAP != transAnimProgress)
+        {
+            lastTAP = transAnimProgress;
+
+            float animPerc = 1f - (transAnimProgress / transAnimTime);
+            bgTransform.position = Vector3.Lerp(moveLerpPoints[0].position, moveLerpPoints[1].position, moveCurve.Evaluate(animPerc));
+            bgTransform.localScale = Vector3.one * scaleCurve.Evaluate(animPerc);
+            for (int i = 0; i < cGroups.Length; i++)
+            {
+                cGroups[i].alpha = alphaCurve.Evaluate(animPerc);
+            }
+
+            transAnimProgress = Mathf.Max(transAnimProgress - Time.deltaTime, 0f);
+
+            if (transAnimProgress == 0)
+            {
+                lastTAP = transAnimProgress;
+                //print("ENDED!");
+
+                if (microgames[currentMicrogameIndex].ownGO) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().startMG();
+                bgTransform.gameObject.SetActive(false);
+            }
         }
     }
     public void toggleWin(bool input)
@@ -124,6 +162,12 @@ public class MicrogameManager : MonoBehaviour
             case "Shake!":
                 break; // choose shake target randomly (Pongon / Shibbi)
         }
+
+        for (int i = 0; i < microgames[index].controls.Length; i++)
+        {
+            controlIcons[i].SetActive(microgames[index].controls[i]);
+        }
+        controlIcons[controlIcons.Length - 1].SetActive(microgames[index].isEPG);
 
         doMicrogameText(microgames[index].name);
     }
@@ -168,5 +212,9 @@ public class MicrogameManager : MonoBehaviour
             output[i] = microgameList[i].clone();
         }
         return output;
+    }
+    public void handleInput(InputAction.CallbackContext obj)
+    {
+        if (transAnimProgress == 0) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().handleInput(obj);
     }
 }

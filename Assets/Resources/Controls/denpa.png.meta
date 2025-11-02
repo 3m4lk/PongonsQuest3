@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5faf54c2cd7618c40ba6be023d8b7db1
+guid: 29dc50df12521de4c8e91c5aaadd31ec
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 487822374834498789
-    second: np_file_237008_0
+      213: -4212027707405927793
+    second: laptop_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -40,9 +40,9 @@ TextureImporter:
     filterMode: 0
     aniso: 1
     mipBias: 0
-    wrapU: 2
-    wrapV: 2
-    wrapW: 2
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -72,12 +72,12 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 128
     resizeAlgorithm: 1
     textureFormat: -1
-    textureCompression: 3
-    compressionQuality: 8
-    crunchedCompression: 1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
     ignorePlatformSupport: 0
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: np_file_237008_0
+      name: laptop_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 2000
-        height: 1332
+        width: 640
+        height: 480
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5ec6f758dd715c600800000000000000
-      internalID: 487822374834498789
+      spriteID: f8a77fbcd1fdb85c0800000000000000
+      internalID: -4212027707405927793
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: ab193a5daf525ff488199d2d29ef83dc
+    spriteID: 2e0b85a991d09754aafba0e41d80d881
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      np_file_237008_0: 487822374834498789
+      laptop_0: -4212027707405927793
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
