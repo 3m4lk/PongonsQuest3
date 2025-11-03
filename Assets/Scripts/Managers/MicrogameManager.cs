@@ -91,23 +91,29 @@ public class MicrogameManager : MonoBehaviour
     public float gameSpeed = 1f, microgameTimer;
 
     public GameObject[] controlIcons;
-    public TMP_Text gameName;
+    public TMP_Text gameName, stageCount;
 
     public bool devMode;
-    public int devIndex;
 
     [Space]
     public float transAnimTime, transAnimProgress, transAnimDire = -1f;
     private float lastTAP;
     public Transform bgTransform;
-    public CanvasGroup[] cGroups;
+    public CanvasGroup[] cGroups, cGroupsInverted;
     public AnimationCurve moveCurve, scaleCurve, alphaCurve;
-    public Transform[] moveLerpPoints;
+    public Transform[] moveLerpPoints, stCountLerpPoints;
 
     [Space]
     public Image timer;
     public Sprite[] timerSprites;
     private int lastTimer;
+
+    [Space]
+    public float stageUpTimer = 1.5f;
+    public AnimationCurve stageUpCurve;
+
+    [Space]
+    public float resultTimer;
 
     private void Awake()
     {
@@ -115,7 +121,7 @@ public class MicrogameManager : MonoBehaviour
         else
         {
             microgames = cloneMGArray(microgameList);
-            playMicrogame(devIndex);
+            playMicrogame(currentMicrogameIndex);
             transAnimProgress = transAnimTime;
         }
         bgTransform.gameObject.SetActive(true);
@@ -124,6 +130,14 @@ public class MicrogameManager : MonoBehaviour
     {
         float deltaTime = Time.deltaTime * gameSpeed;
 
+        if (stageUpTimer != 0)
+        {
+            float stagePerc = 1.5f - (stageUpTimer = Mathf.Max(stageUpTimer - deltaTime, 0f));
+            stageCount.transform.localScale = Vector3.one * stageUpCurve.Evaluate(stagePerc);
+            if (stagePerc >= 0.5f && stageCount.text != (currentMicrogameIndex + 1) + "") stageCount.text = (currentMicrogameIndex + 1) + "";
+            return;
+        }
+
         if (lastTAP != transAnimProgress)
         {
             lastTAP = transAnimProgress;
@@ -131,9 +145,16 @@ public class MicrogameManager : MonoBehaviour
             float animPerc = 1f - (transAnimProgress / transAnimTime);
             bgTransform.position = Vector3.Lerp(moveLerpPoints[0].position, moveLerpPoints[1].position, moveCurve.Evaluate(animPerc));
             bgTransform.localScale = Vector3.one * scaleCurve.Evaluate(animPerc);
+
+            stageCount.transform.position = Vector3.Lerp(stCountLerpPoints[0].position, stCountLerpPoints[1].position, moveCurve.Evaluate(animPerc));
+
             for (int i = 0; i < cGroups.Length; i++)
             {
                 cGroups[i].alpha = alphaCurve.Evaluate(animPerc);
+            }
+            for (int i = 0; i < cGroupsInverted.Length; i++)
+            {
+                cGroupsInverted[i].alpha = alphaCurve.Evaluate(1f - animPerc);
             }
 
             transAnimProgress = Mathf.Clamp(transAnimProgress - deltaTime * transAnimDire, 0f, transAnimTime);
@@ -145,15 +166,22 @@ public class MicrogameManager : MonoBehaviour
 
                 if (microgames[currentMicrogameIndex].ownGO) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().startMG();
                 bgTransform.gameObject.SetActive(false);
+                gameName.enabled = false;
             }
             else if (transAnimProgress == transAnimTime && transAnimDire == -1f)
             {
+                timer.enabled = false;
                 print("ended; boot the results (take away a life if lost);\n" +
                     "update P&S to idle sprite / panicked (on speed up / boss);\n" +
                     "speed up / boss;\n" +
                     "controls;\n" +
                     "stage number and name");
                 // result, speed up, controls, stage number and stage name
+
+                transAnimDire = 1f;
+                stageUpTimer = 1.5f;
+                playMicrogame(currentMicrogameIndex);
+                gameName.enabled = true;
             }
             return;
         }
@@ -162,17 +190,7 @@ public class MicrogameManager : MonoBehaviour
         {
             microgameTimer = Mathf.Max(microgameTimer - deltaTime * gameSpeed, 0f);
 
-            if (Mathf.CeilToInt(microgameTimer * 2f) != lastTimer)
-            {
-                lastTimer = Mathf.CeilToInt(microgameTimer * 2f);
-
-                if (lastTimer < timerSprites.Length)
-                {
-                    timer.enabled = true;
-                    timer.sprite = timerSprites[timerSprites.Length - lastTimer - 1];
-                }
-                else timer.enabled = false;
-            }
+            timerVis();
 
             if (microgameTimer == 0f)
             {
@@ -185,12 +203,37 @@ public class MicrogameManager : MonoBehaviour
             }
         }
     }
+    void timerVis()
+    {
+        if (Mathf.CeilToInt(microgameTimer * 2f) != lastTimer)
+        {
+            lastTimer = Mathf.CeilToInt(microgameTimer * 2f);
+
+            if (lastTimer < timerSprites.Length)
+            {
+                timer.enabled = true;
+                timer.sprite = timerSprites[timerSprites.Length - lastTimer - 1];
+            }
+            else timer.enabled = false;
+
+        }
+    }
     public void toggleWin(bool input)
     {
         winState = input;
+
+        if (winState)
+        {
+
+        } // on toggle win
+        else
+        {
+
+        } // on toggle failure
     }
     public void playMicrogame(int index)
     {
+        winState = false;
         for (int i = 0; i < microgames.Length; i++)
         {
             if (microgames[i].ownGO) microgames[i].ownGO.SetActive(i == index);

@@ -139,6 +139,12 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.BCA:
+                if (bools[0])
+                {
+                    bools[0] = false;
+                    manager.toggleWin(false);
+                    isPlaying = false;
+                }
                 break;
             case mcg.Stream:
                 break;
@@ -179,6 +185,10 @@ public class MicrogameScript : MonoBehaviour
                 floats[3] = 0.04f;
 
                 bools = new bool[3];
+                break;
+            case mcg.BCA:
+                bools = new bool[1];
+                bools[0] = true;
                 break;
             case mcg.Stream:
                 break;
