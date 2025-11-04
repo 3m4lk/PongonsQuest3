@@ -310,7 +310,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 12
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 151372d7fd1d3454b99ce44145553412, type: 2}
   m_sharedMaterial: {fileID: 3758498470307651456, guid: 151372d7fd1d3454b99ce44145553412, type: 2}
@@ -3405,6 +3405,13 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  resultTimer: 0
+  resSprites:
+  - {fileID: 21300000, guid: 2c70b7eecbcc5794a97e08d1b4520926, type: 3}
+  - {fileID: 21300000, guid: 4e4916089c409d344aa8fc1b922be7cb, type: 3}
+  - {fileID: 21300000, guid: 13af3edd72203cb499fb626a8af0b272, type: 3}
+  - {fileID: 21300000, guid: bbf06c24e0d7cba45837671ad5ae6027, type: 3}
+  resImage: {fileID: 1405549408}
 --- !u!4 &1819674885
 Transform:
   m_ObjectHideFlags: 0

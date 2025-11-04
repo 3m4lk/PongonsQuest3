@@ -114,6 +114,8 @@ public class MicrogameManager : MonoBehaviour
 
     [Space]
     public float resultTimer;
+    public Sprite[] resSprites;
+    public Image resImage;
 
     private void Awake()
     {
@@ -182,6 +184,8 @@ public class MicrogameManager : MonoBehaviour
                 stageUpTimer = 1.5f;
                 playMicrogame(currentMicrogameIndex);
                 gameName.enabled = true;
+
+                resVisChange(0);
             }
             return;
         }
@@ -200,8 +204,22 @@ public class MicrogameManager : MonoBehaviour
                 transAnimProgress = Mathf.Clamp(transAnimProgress - deltaTime * transAnimDire, 0f, transAnimTime);
                 lastTAP = -1f;
                 bgTransform.gameObject.SetActive(true);
+
+                if (winState) resVisChange(1);
+                else resVisChange(2);
+                // do vis based on win status
             }
         }
+    }
+    void resVisChange(int index)
+    {
+        // 0 - default
+        // 1 - win
+        // 2 - loss
+        // 3 - faceless (1/666 chance)
+
+        resImage.sprite = resSprites[index];
+        if (index != 0 && Random.Range(0, 666) == 9) resImage.sprite = resSprites[3];
     }
     void timerVis()
     {
