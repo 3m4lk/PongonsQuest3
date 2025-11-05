@@ -88,7 +88,8 @@ public class MicrogameManager : MonoBehaviour
 
     [Space]
     public bool winState;
-    public float gameSpeed = 1f, microgameTimer;
+    public float gameSpeed = 1f, microgameTimer, speedMult = 1.1f;
+    private float bpmSpeed = 12f;
 
     public GameObject[] controlIcons;
     public TMP_Text gameName, stageCount;
@@ -99,7 +100,7 @@ public class MicrogameManager : MonoBehaviour
     public float transAnimTime, transAnimProgress, transAnimDire = -1f;
     private float lastTAP;
     public Transform bgTransform;
-    public CanvasGroup[] cGroups, cGroupsInverted;
+    public CanvasGroup[] cGroups, cGroupsFaster;
     public AnimationCurve moveCurve, scaleCurve, alphaCurve;
     public Transform[] moveLerpPoints, stCountLerpPoints;
 
@@ -110,12 +111,31 @@ public class MicrogameManager : MonoBehaviour
 
     [Space]
     public float stageUpTimer = 1.5f;
-    public AnimationCurve stageUpCurve;
+    public AnimationCurve stageUpCurve, gnScaleCurve, gnScaleCurve2, gnAlphaCurve;
+    public CanvasGroup gameNameAlpha;
 
     [Space]
     public float resultTimer;
     public Sprite[] resSprites;
     public Image resImage;
+
+    [Space]
+    public float speedUpTimer;
+    public CanvasGroup speedVis0;
+    public Transform speedVis1, speedVisSpeed, speedVisUp;
+    public AnimationCurve speedVisCurve, speedVisAlphaCurve;
+    public Transform[] spv1Points, spvsPoints, spvuPoints;
+
+    [Space]
+    public float bossTimer;
+
+    [Space]
+    public float controlsTimer;
+    public AnimationCurve cCurve;
+    public Transform controlsThing;
+    public Transform[] cPositions;
+
+    private float initialWait = 2f;
 
     private void Awake()
     {
@@ -127,15 +147,96 @@ public class MicrogameManager : MonoBehaviour
             transAnimProgress = transAnimTime;
         }
         bgTransform.gameObject.SetActive(true);
+        bpmSpeed = 12f;
+        initialWait = 2f;
     }
     private void Update()
     {
         float deltaTime = Time.deltaTime * gameSpeed;
 
+        if (initialWait != 0)
+        {
+            initialWait = Mathf.Max(initialWait - deltaTime, 0f);
+            return;
+        }
+
+        if (controlsTimer != 0)
+        {
+            controlsTimer = Mathf.Max(controlsTimer - deltaTime, 0f);
+
+            float cMult = 1f - (controlsTimer * 0.4f); // multiplying by 0.4 is cheaper than dividing by 2.5, and it yields the same result anyway
+
+            controlsThing.localScale = Vector3.Lerp(cPositions[0].localScale, cPositions[1].localScale, cCurve.Evaluate(cMult));
+            controlsThing.position = Vector3.Lerp(cPositions[0].position, cPositions[1].position, cCurve.Evaluate(cMult));
+
+            if (controlsTimer == 0)
+            {
+                gameName.enabled = true;
+                gameName.transform.localScale = Vector3.one * gnScaleCurve.Evaluate(0);
+            }
+
+            return;
+        }
+
+        if (bossTimer != 0)
+        {
+            bossTimer = Mathf.Max(bossTimer - deltaTime, 0f);
+
+            if (bossTimer == 0) controlsTimer = 2.5f;
+
+            return;
+        }
+
+        if (speedUpTimer != 0)
+        {
+            speedUpTimer = Mathf.Max(speedUpTimer - deltaTime, 0f);
+
+            float suMult = 0f;
+            if (speedUpTimer != 0) suMult = speedUpTimer / 3f;
+
+            speedVis1.localScale = Vector3.Lerp(spv1Points[0].localScale, spv1Points[1].localScale, speedVisCurve.Evaluate(suMult));
+            speedVisSpeed.position = Vector3.Lerp(spvsPoints[0].position, spvsPoints[1].position, speedVisCurve.Evaluate(suMult));
+            speedVisUp.position = Vector3.Lerp(spvuPoints[0].position, spvuPoints[1].position, speedVisCurve.Evaluate(suMult));
+            speedVis0.alpha = speedVisAlphaCurve.Evaluate(suMult);
+
+            if (speedUpTimer == 0) controlsTimer = 2.5f;
+
+            return;
+        }
+
+        if (resultTimer != 0)
+        {
+            resultTimer = Mathf.Max(resultTimer - deltaTime, 0f);
+
+            if (resultTimer <= 1f) resVisChange(0);
+
+            if (resultTimer == 0)
+            {
+                for (int i = 0; i < speedUpIndexes.Length; i++)
+                {
+                    if (currentMicrogameIndex == speedUpIndexes[i])
+                    {
+                        print("SPEED UP TIME SET");
+                        speedUpTimer = 3f;
+                        bpmSpeed += 1f;
+                        gameSpeed = bpmSpeed / 12f;
+                        return;
+                    }
+                }
+
+                // do the controls time
+                controlsTimer = 2.5f;
+            }
+            return;
+        }
+
         if (stageUpTimer != 0)
         {
             float stagePerc = 1.5f - (stageUpTimer = Mathf.Max(stageUpTimer - deltaTime, 0f));
+
             stageCount.transform.localScale = Vector3.one * stageUpCurve.Evaluate(stagePerc);
+            gameName.transform.localScale = Vector3.one * gnScaleCurve.Evaluate(stagePerc);
+
             if (stagePerc >= 0.5f && stageCount.text != (currentMicrogameIndex + 1) + "") stageCount.text = (currentMicrogameIndex + 1) + "";
             return;
         }
@@ -154,12 +255,15 @@ public class MicrogameManager : MonoBehaviour
             {
                 cGroups[i].alpha = alphaCurve.Evaluate(animPerc);
             }
-            for (int i = 0; i < cGroupsInverted.Length; i++)
+            for (int i = 0; i < cGroupsFaster.Length; i++)
             {
-                cGroupsInverted[i].alpha = alphaCurve.Evaluate(1f - animPerc);
+                cGroupsFaster[i].alpha = alphaCurve.Evaluate(animPerc * 2f);
             }
 
             transAnimProgress = Mathf.Clamp(transAnimProgress - deltaTime * transAnimDire, 0f, transAnimTime);
+
+            gameName.transform.localScale = Vector3.one * gnScaleCurve2.Evaluate(animPerc);
+            gameNameAlpha.alpha = gnAlphaCurve.Evaluate(animPerc);
 
             if (transAnimProgress == 0 && transAnimDire == 1f)
             {
@@ -178,14 +282,13 @@ public class MicrogameManager : MonoBehaviour
                     "speed up / boss;\n" +
                     "controls;\n" +
                     "stage number and name");
-                // result, speed up, controls, stage number and stage name
+                // result, speed up / boss stage, controls, stage number and stage name
 
                 transAnimDire = 1f;
                 stageUpTimer = 1.5f;
                 playMicrogame(currentMicrogameIndex);
-                gameName.enabled = true;
 
-                resVisChange(0);
+                resultTimer = 1.5f;
             }
             return;
         }

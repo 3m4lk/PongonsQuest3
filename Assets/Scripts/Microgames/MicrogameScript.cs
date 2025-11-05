@@ -78,6 +78,7 @@ public class MicrogameScript : MonoBehaviour
                         floats[3] = 0.04f;
                         gameObjects[0].SetActive(false);
                         gameObjects[1].SetActive(true);
+                        gameObjects[7].SetActive(false);
                     }
                     return;
                 }
@@ -242,12 +243,13 @@ public class MicrogameScript : MonoBehaviour
                         bools[1] = true;
                         floats[4] = 0.75f;
                         transforms[0].GetComponentInChildren<Image>().color = Color.yellow;
-                    }
+                        gameObjects[7].SetActive(true);
+                    } // success
                     else
                     {
                         bools[2] = true;
                         gameObjects[6].SetActive(true);
-                    }
+                    } // miss
                 }
                 break;
             case mcg.Stream:
