@@ -428,4 +428,8 @@ public class MicrogameManager : MonoBehaviour
     {
         if (transAnimProgress == 0) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().handleInput(obj);
     }
+    public void lowerTimer(float amount)
+    {
+        if (microgameTimer > amount) microgameTimer = amount;
+    }
 }
