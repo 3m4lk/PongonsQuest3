@@ -30,6 +30,7 @@ public class MicrogameScript : MonoBehaviour
     public Transform[] transforms;
     public GameObject[] gameObjects;
     public AnimationCurve[] curves;
+    public int[] ints;
     public float[] floats;
     public bool[] bools;
 
@@ -148,6 +149,40 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Stream:
+                // float 0: arrow position
+
+                // int 0: target stream
+                // int 1: last integer position
+
+                // transform 0: cursor
+                // transform 0: cursorPos0
+                // transform 0: cursorPos1
+
+                // GOs 0-4: stream buttons
+                // GO 5: animation success
+                // GO 6: animation failure
+
+                if (bools[0]) return;
+
+                floats[0] = Mathf.Repeat(floats[0] + deltaTime * 3f, 5f);
+
+                Vector3 pos = transforms[0].position;
+                pos.y = Mathf.Lerp(transforms[1].position.y, transforms[2].position.y, floats[0] * 0.2f);
+                transforms[0].position = pos;
+
+                if (Mathf.FloorToInt(floats[0]) != ints[1])
+                {
+                    ints[1] = Mathf.FloorToInt(floats[0]);
+                    // deselect all other buttons
+                    // select current button
+                    // play sound
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        gameObjects[i].GetComponent<Image>().color = new Color32(128, 128, 128, 255);
+                        if (i == ints[1]) gameObjects[i].GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+                    }
+                }
                 break;
             case mcg.Quiz:
                 break;
@@ -192,6 +227,27 @@ public class MicrogameScript : MonoBehaviour
                 bools[0] = true;
                 break;
             case mcg.Stream:
+                floats = new float[1];
+                floats[0] = (int)(Random.Range(0f, 4f));
+
+                ints = new int[2];
+                ints[0] = Random.Range(0, 5);
+                ints[1] = Mathf.FloorToInt(floats[0]);
+
+                bools = new bool[1];
+
+                transforms[0].position = Vector3.Lerp(transforms[1].position, transforms[2].position, floats[0] * 0.2f);
+                transforms[0].gameObject.SetActive(true);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    gameObjects[i].GetComponent<Image>().color = new Color32(128, 128, 128, 255);
+                    if (i == ints[1]) gameObjects[i].GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+
+                    gameObjects[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("Placeholders/Microgames/Stream/streamCommon"); // common
+                    if (i == ints[0]) gameObjects[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("Placeholders/Microgames/Stream/streamTarget"); // target
+                }
+
                 break;
             case mcg.Quiz:
                 break;
@@ -253,6 +309,18 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Stream:
+                if (obj.action.name == "Space")
+                {
+                    bools[0] = true;
+                    if (Mathf.FloorToInt(floats[0]) == ints[0])
+                    {
+                        print("Success!");
+                    } //success
+                    else
+                    {
+                        print("Failure!");
+                    } // failure
+                }
                 break;
             case mcg.Quiz:
                 break;
