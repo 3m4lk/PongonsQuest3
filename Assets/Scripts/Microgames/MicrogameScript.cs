@@ -230,20 +230,29 @@ public class MicrogameScript : MonoBehaviour
                 // bool 2: should ??? be spawned
 
                 // float 0: results animation progress (kakashi "have a great day" meme on victory, screaming lion on failure)
+                // float 1: ??? delay
 
                 // strings 0: former ???
 
                 // GOs 0-3: buttons
+                // GO 4: quiz name
 
                 if (bools[2])
                 {
-                    bools[2] = false;
-                    for (int i = 0; i < gameObjects.Length; i++)
+                    if (floats[1] != 0)
                     {
-                        if (gameObjects[i].GetComponentInChildren<TMP_Text>().text == "Gaster")
+                        floats[1] = Mathf.Max(floats[1] - deltaTime, 0f);
+                    }
+                    else
+                    {
+                        bools[2] = false;
+                        for (int i = 0; i < gameObjects.Length; i++)
                         {
-                            gameObjects[i].GetComponentInChildren<TMP_Text>().text = strings[0];
-                            break;
+                            if (gameObjects[i].GetComponentInChildren<TMP_Text>().text == "Gaster")
+                            {
+                                gameObjects[i].GetComponentInChildren<TMP_Text>().text = strings[0];
+                                break;
+                            }
                         }
                     }
                 } // immediately replace ???
@@ -322,6 +331,8 @@ public class MicrogameScript : MonoBehaviour
 
                 break;
             case mcg.Quiz:
+                gameObjects[4].GetComponent<TMP_Text>().text = "Microgame " + (manager.currentMicrogameIndex + 1) + ":\nWhat is Polygon Donut NOT often called?";
+
                 //string[] randomWrong = new string[] { "Jeanice", "Hollow Knight: Silksong", "Impala 64", "Minecraft Pocket Edition", "Shibbi", "Jorjor Well", "Dolygon Ponut", "Gaster", "Marlok", "Gorn", "Khrobaron", "Dedede", "K. Rool", "Gianni Matragrano", "Thermonuclear Reactor", "Wriggle Nightbug" }; // immediately swap ??? to a different randomly chosen one
 
                 string[] normalAnswers = new string[] { "Polygon Donut", "Pongon", "Mowmow", "pongondonute" };
@@ -351,6 +362,9 @@ public class MicrogameScript : MonoBehaviour
 
                 bools = new bool[3];
                 bools[2] = (Random.Range(1, 10) == 3);
+                bools[2] = true;
+
+                floats = new float[2];
 
                 int randMystInt = Random.Range(0, 4);
 
@@ -372,6 +386,7 @@ public class MicrogameScript : MonoBehaviour
                     {
                         strings[0] = finalAnswers[i];
                         finalAnswers[i] = "Gaster";
+                        floats[1] = 0.1f;
                         bools[2] = true;
                     } // ??? swap
 
@@ -405,7 +420,9 @@ public class MicrogameScript : MonoBehaviour
     public void handleInput(InputAction.CallbackContext obj)
     {
         if (!isPlaying) return;
+
         bool mode = obj.action.triggered;
+        string inputName = obj.action.name;
 
         /*switch (obj.action.name)
         {
@@ -417,7 +434,7 @@ public class MicrogameScript : MonoBehaviour
         {
             case mcg.Parry:
                 if (floats[4] != 0) break;
-                if (!(bools[1] || bools[2]) && (obj.action.name == "Space" || obj.action.name == "LClick"))
+                if (!(bools[1] || bools[2]) && (inputName == "Space" || inputName == "LClick"))
                 {
                     gameObjects[2].SetActive(false);
                     gameObjects[3].SetActive(true);
@@ -436,7 +453,7 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Stream:
-                if (obj.action.name == "Space")
+                if (inputName == "Space")
                 {
                     bools[0] = true;
                     if (Mathf.FloorToInt(floats[0]) == ints[0])
@@ -463,6 +480,10 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Quiz:
+                if (inputName == "Movement")
+                {
+                    print(obj.action.ReadValue<Vector2>());
+                }
                 break;
             case mcg.Shake:
                 break;
