@@ -34,6 +34,7 @@ public class MicrogameScript : MonoBehaviour
     public int[] ints;
     public float[] floats;
     public bool[] bools;
+    public string[] strings;
 
     public float gameSpeed = 1f;
     private void Awake()
@@ -221,6 +222,32 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Quiz:
+                // int 0: current index
+                // int 1: winner index
+
+                // bool 0: has pressed
+                // bool 1: is correct answer
+                // bool 2: should ??? be spawned
+
+                // float 0: results animation progress (kakashi "have a great day" meme on victory, screaming lion on failure)
+
+                // strings 0: former ???
+
+                // GOs 0-3: buttons
+
+                if (bools[2])
+                {
+                    bools[2] = false;
+                    for (int i = 0; i < gameObjects.Length; i++)
+                    {
+                        if (gameObjects[i].GetComponentInChildren<TMP_Text>().text == "Gaster")
+                        {
+                            gameObjects[i].GetComponentInChildren<TMP_Text>().text = strings[0];
+                            break;
+                        }
+                    }
+                } // immediately replace ???
+
                 break;
             case mcg.Shake:
                 break;
@@ -295,6 +322,61 @@ public class MicrogameScript : MonoBehaviour
 
                 break;
             case mcg.Quiz:
+                //string[] randomWrong = new string[] { "Jeanice", "Hollow Knight: Silksong", "Impala 64", "Minecraft Pocket Edition", "Shibbi", "Jorjor Well", "Dolygon Ponut", "Gaster", "Marlok", "Gorn", "Khrobaron", "Dedede", "K. Rool", "Gianni Matragrano", "Thermonuclear Reactor", "Wriggle Nightbug" }; // immediately swap ??? to a different randomly chosen one
+
+                string[] normalAnswers = new string[] { "Polygon Donut", "Pongon", "Mowmow", "pongondonute" };
+                string[] wrongAnswers = new string[] { "Poiygon Donut", "Pomgon", "Mommow", "pongondonote" };
+
+                string[] finalAnswers = new string[4];
+                for (int i = 0; i < finalAnswers.Length; i++)
+                {
+                    finalAnswers[i] = normalAnswers[i];
+                }
+
+                for (int i = 0; i < 2; i++)
+                {
+                    // Knuth shuffle algorithm :: courtesy of Wikipedia :)
+                    for (int t = 0; t < finalAnswers.Length; t++)
+                    {
+                        string tmp = finalAnswers[t];
+                        int r = Random.Range(t, finalAnswers.Length);
+                        finalAnswers[t] = finalAnswers[r];
+                        finalAnswers[r] = tmp;
+                    }
+                }
+
+                ints = new int[2];
+                ints[0] = 0;
+                ints[1] = Random.Range(0, 4);
+
+                bools = new bool[3];
+                bools[2] = (Random.Range(1, 10) == 3);
+
+                int randMystInt = Random.Range(0, 4);
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (i == ints[1])
+                    {
+                        for (int a = 0; a < wrongAnswers.Length; a++)
+                        {
+                            if (finalAnswers[i] == normalAnswers[a])
+                            {
+                                finalAnswers[i] = wrongAnswers[a];
+                                break;
+                            }
+                        }
+                    } // impostor
+
+                    if (bools[2] && i == randMystInt)
+                    {
+                        strings[0] = finalAnswers[i];
+                        finalAnswers[i] = "Gaster";
+                        bools[2] = true;
+                    } // ??? swap
+
+                    gameObjects[i].GetComponentInChildren<TMP_Text>().text = finalAnswers[i];
+                }
                 break;
             case mcg.Shake:
                 break;
