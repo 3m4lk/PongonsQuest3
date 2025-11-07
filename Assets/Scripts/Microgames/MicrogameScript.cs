@@ -228,6 +228,7 @@ public class MicrogameScript : MonoBehaviour
                 // bool 0: has pressed
                 // bool 1: is correct answer
                 // bool 2: should ??? be spawned
+                // bool 3: previous vertical mode state
 
                 // float 0: results animation progress (kakashi "have a great day" meme on victory, screaming lion on failure)
                 // float 1: ??? delay
@@ -236,6 +237,8 @@ public class MicrogameScript : MonoBehaviour
 
                 // GOs 0-3: buttons
                 // GO 4: quiz name
+                // GO 5: win sprite
+                // GO 6: failure sprite
 
                 if (bools[2])
                 {
@@ -336,7 +339,7 @@ public class MicrogameScript : MonoBehaviour
                 //string[] randomWrong = new string[] { "Jeanice", "Hollow Knight: Silksong", "Impala 64", "Minecraft Pocket Edition", "Shibbi", "Jorjor Well", "Dolygon Ponut", "Gaster", "Marlok", "Gorn", "Khrobaron", "Dedede", "K. Rool", "Gianni Matragrano", "Thermonuclear Reactor", "Wriggle Nightbug" }; // immediately swap ??? to a different randomly chosen one
 
                 string[] normalAnswers = new string[] { "Polygon Donut", "Pongon", "Mowmow", "pongondonute" };
-                string[] wrongAnswers = new string[] { "Poiygon Donut", "Pomgon", "Mommow", "pongondonote" };
+                string[] wrongAnswers = new string[] { "Poiygon Donut", "Pungon", "Movmow", "pongondonate" };
 
                 string[] finalAnswers = new string[4];
                 for (int i = 0; i < finalAnswers.Length; i++)
@@ -360,9 +363,8 @@ public class MicrogameScript : MonoBehaviour
                 ints[0] = 0;
                 ints[1] = Random.Range(0, 4);
 
-                bools = new bool[3];
+                bools = new bool[4];
                 bools[2] = (Random.Range(1, 10) == 3);
-                bools[2] = true;
 
                 floats = new float[2];
 
@@ -386,7 +388,7 @@ public class MicrogameScript : MonoBehaviour
                     {
                         strings[0] = finalAnswers[i];
                         finalAnswers[i] = "Gaster";
-                        floats[1] = 0.1f;
+                        floats[1] = 0.2f;
                         bools[2] = true;
                     } // ??? swap
 
@@ -482,7 +484,32 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Quiz:
                 if (inputName == "Movement")
                 {
-                    print(obj.action.ReadValue<Vector2>());
+                    //print(obj.action.ReadValue<Vector2>());
+
+                    if (bools[3] != mode && mode)
+                    {
+                        ints[0] = (int)Mathf.Repeat(ints[0] - Mathf.Sign(obj.action.ReadValue<Vector2>().y), 4);
+
+                        // update visual
+
+                        for (int i = 0; i < 4; i++)
+                        {
+                            gameObjects[i].transform.GetChild(1).GetComponent<Image>().enabled = (i == ints[0]);
+                        }
+                    }
+
+                    bools[3] = mode;
+                }
+                else if (inputName == "Space")
+                {
+                    manager.toggleWin(ints[0] == ints[1]);
+                    gameObjects[5].SetActive(ints[0] == ints[1]);
+                    gameObjects[6].SetActive(ints[0] != ints[1]);
+
+                    // mark selector as correct / wrong (dependent on chosen option)
+                    // highlight correct answer's text
+
+                    manager.lowerTimer(3);
                 }
                 break;
             case mcg.Shake:
