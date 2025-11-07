@@ -262,6 +262,30 @@ public class MicrogameScript : MonoBehaviour
 
                 break;
             case mcg.Shake:
+                // float 0: progress
+                // float 1: intro duration
+                // float 2: outro duration
+
+                // bool 0: cursorState
+                // bool 1: has won
+
+                // GO 0: Pongon
+                // GO 1: Shibbi
+                // GO 2: drink Pongon
+                // GO 3: drink Shibbi
+                // GO 4: meter
+                // GO 5: cursor prompt
+
+
+                // if progress is above (maxProgress - some small margin) && shaker is somewhere near the middle, initiate finish animation
+
+                if (bools[1]) return;
+                floats[0] = Mathf.Max(floats[0] - deltaTime * 200f, 0f);
+
+                if (floats[0] == 0) gameObjects[4].GetComponent<Image>().fillAmount = 0;
+                else gameObjects[4].GetComponent<Image>().fillAmount = floats[0] / 1750f;
+
+                GameObject.Find("teText").GetComponent<TMP_Text>().text = floats[0] + "";
                 break;
             case mcg.Drive:
                 break;
@@ -396,6 +420,12 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Shake:
+                bools = new bool[2];
+
+                int randChoice = Random.Range(0, 2);
+
+                gameObjects[randChoice].SetActive(true); // set character as active
+                gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
                 break;
             case mcg.Drive:
                 break;
@@ -513,6 +543,25 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Shake:
+                if (bools[1]) break;
+                if (inputName == "LClick")
+                {
+                    bools[0] = mode;
+
+                    gameObjects[5].SetActive(!mode);
+                }
+                else if (inputName == "MouseMove" && bools[0])
+                {
+                    // add progress based on vertical movement
+                    floats[0] = Mathf.Min(floats[0] + Mathf.Abs(obj.action.ReadValue<Vector2>().y) * 0.05f, 1750f);
+                    // move parent of both shaker parts on y with mouse input, but clamped
+                    if (floats[0] == 1750f)
+                    {
+                        bools[1] = true;
+                        manager.toggleWin(true);
+                        manager.lowerTimer(3);
+                    }
+                }
                 break;
             case mcg.Drive:
                 break;
