@@ -8353,6 +8353,17 @@ MonoBehaviour:
     boolVars: 
     transforms: []
     isEPG: 0
+  - name: Chase!
+    altName: 
+    ownGO: {fileID: 0}
+    microgameTime: 10
+    controls: 00010000
+    stringVars: []
+    intVars: 
+    floatVars: []
+    boolVars: 
+    transforms: []
+    isEPG: 0
   - name: Lag!
     altName: 
     ownGO: {fileID: 0}
@@ -8380,17 +8391,6 @@ MonoBehaviour:
     ownGO: {fileID: 0}
     microgameTime: 10
     controls: 00000001
-    stringVars: []
-    intVars: 
-    floatVars: []
-    boolVars: 
-    transforms: []
-    isEPG: 0
-  - name: Chase!
-    altName: 
-    ownGO: {fileID: 0}
-    microgameTime: 10
-    controls: 00010000
     stringVars: []
     intVars: 
     floatVars: []
