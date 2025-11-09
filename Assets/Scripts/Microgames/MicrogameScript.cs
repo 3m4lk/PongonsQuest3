@@ -126,7 +126,7 @@ public class MicrogameScript : MonoBehaviour
 
                 if (floats[1] <= floats[2])
                 {
-                    if ((floats[3] = Mathf.Max(floats[3] - Time.deltaTime, 0f)) == 0f)
+                    if ((floats[3] = Mathf.Max(floats[3] - deltaTime, 0f)) == 0f)
                     {
                         floats[3] = 0.04f;
 
@@ -338,13 +338,21 @@ public class MicrogameScript : MonoBehaviour
                 if (floats[0] == 0) gameObjects[4].GetComponent<Image>().fillAmount = 0;
                 else gameObjects[4].GetComponent<Image>().fillAmount = floats[0] / 1750f;
 
-                GameObject.Find("teText").GetComponent<TMP_Text>().text = floats[0] + "";
+                //GameObject.Find("teText").GetComponent<TMP_Text>().text = floats[0] + "";
                 break;
             case mcg.Drive:
                 break;
             case mcg.LetIn:
                 break;
             case mcg.Chase:
+
+                // float 0: input x
+                // float 1: input y
+
+                // transform 0: Pongon visual
+
+                float randRange = 2f;
+                transforms[0].localPosition = new Vector3(Random.Range(-randRange, randRange), Random.Range(-randRange, randRange), Random.Range(-randRange, randRange));
                 break;
             case mcg.Pray:
                 break;
@@ -483,6 +491,9 @@ public class MicrogameScript : MonoBehaviour
             case mcg.LetIn:
                 break;
             case mcg.Chase:
+
+                floats = new float[2];
+
                 break;
             case mcg.Pray:
                 break;
@@ -605,7 +616,7 @@ public class MicrogameScript : MonoBehaviour
                 {
                     float addAmount = Mathf.Abs(obj.action.ReadValue<Vector2>().y) * 0.1f;
 
-                    if (transforms[0].position.y == transforms[1].position.y || transforms[0].position.y == transforms[2].position.y) addAmount *= 0.3f;
+                    if (transforms[0].position.y == transforms[1].position.y || transforms[0].position.y == transforms[2].position.y) addAmount *= 0.1f;
 
                     floats[0] = Mathf.Min(floats[0] + addAmount, 1750f);
 
@@ -636,6 +647,11 @@ public class MicrogameScript : MonoBehaviour
             case mcg.LetIn:
                 break;
             case mcg.Chase:
+                if (inputName == "Movement")
+                {
+                    floats[0] = obj.action.ReadValue<Vector2>().x;
+                    floats[1] = obj.action.ReadValue<Vector2>().y;
+                } // just move Shibbi
                 break;
             case mcg.Pray:
                 break;
