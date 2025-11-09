@@ -369,6 +369,10 @@ public class MicrogameManager : MonoBehaviour
                 }
                 break; // choose randomly the type (let / dont let in)
             case "Shake!":
+
+                int randChoice = Random.Range(0, 2);
+                microgames[index].ownGO.GetComponent<MicrogameScript>().gameObjects[randChoice].SetActive(true); // set character as active
+                microgames[index].ownGO.GetComponent<MicrogameScript>().gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
                 break; // choose shake target randomly (Pongon / Shibbi)
         }
 

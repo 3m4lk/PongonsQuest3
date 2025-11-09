@@ -276,9 +276,62 @@ public class MicrogameScript : MonoBehaviour
                 // GO 4: meter
                 // GO 5: cursor prompt
 
+                // transform 0: shaker main
+                // transform 1 & 2: shaker main clamps
+                // transform 3: shaker main shadow
+                // transform 4: shaker top
+                // transform 5: shaker bottom
+                // transform 6: shaker top shadow
+                // transform 7: shaker bottom shadow
+                // transform 8: og shaker pos
+                // transform 9: local shaker top clamp
+
 
                 // if progress is above (maxProgress - some small margin) && shaker is somewhere near the middle, initiate finish animation
+                if (floats[2] != 0)
+                {
+                    floats[2] = Mathf.Max(floats[2] - deltaTime, 0f);
 
+                    float aniMult = 0;
+                    if (floats[2] != 0) aniMult = floats[2] / 0.85f;
+
+                    transforms[4].localPosition = Vector3.Lerp(transforms[9].localPosition, Vector3.zero, aniMult);
+                    transforms[5].localPosition = Vector3.Lerp(-transforms[9].localPosition, Vector3.zero, aniMult);
+                    transforms[6].localPosition = Vector3.Lerp(transforms[9].localPosition, Vector3.zero, aniMult);
+                    transforms[7].localPosition = Vector3.Lerp(-transforms[9].localPosition, Vector3.zero, aniMult);
+
+                    float fasterMult = Mathf.Min((1f - aniMult) * 1.55f, 1f);
+
+                    gameObjects[2].transform.localScale = Vector3.one * fasterMult;
+                    gameObjects[3].transform.localScale = Vector3.one * fasterMult;
+                    gameObjects[2].GetComponent<CanvasGroup>().alpha = fasterMult * 1.5f;
+                    gameObjects[3].GetComponent<CanvasGroup>().alpha = fasterMult * 1.5f;
+
+                    return;
+                }
+                if (floats[1] != 0)
+                {
+                    floats[1] = Mathf.Max(floats[1] - deltaTime, 0f);
+
+                    float aniMult = 0;
+                    if (floats[1] != 0) aniMult = floats[1] / 0.7f;
+
+                    transforms[4].localPosition = Vector3.Lerp(Vector3.zero, transforms[9].localPosition, aniMult);
+                    transforms[5].localPosition = Vector3.Lerp(Vector3.zero, -transforms[9].localPosition, aniMult);
+                    transforms[6].localPosition = Vector3.Lerp(Vector3.zero, transforms[9].localPosition, aniMult);
+                    transforms[7].localPosition = Vector3.Lerp(Vector3.zero, -transforms[9].localPosition, aniMult);
+
+                    if (floats[1] == 0)
+                    {
+                        // play sound
+                        gameObjects[0].SetActive(false);
+                        gameObjects[1].SetActive(false);
+
+                        gameObjects[5].SetActive(true); // enable cursor prompt
+                    }
+
+                    return;
+                }
                 if (bools[1]) return;
                 floats[0] = Mathf.Max(floats[0] - deltaTime * 200f, 0f);
 
@@ -422,10 +475,8 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Shake:
                 bools = new bool[2];
 
-                int randChoice = Random.Range(0, 2);
-
-                gameObjects[randChoice].SetActive(true); // set character as active
-                gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
+                floats = new float[3];
+                floats[1] = 0.7f;
                 break;
             case mcg.Drive:
                 break;
@@ -543,7 +594,7 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Shake:
-                if (bools[1]) break;
+                if (bools[1] || floats[1] != 0) break;
                 if (inputName == "LClick")
                 {
                     bools[0] = mode;
@@ -552,15 +603,32 @@ public class MicrogameScript : MonoBehaviour
                 }
                 else if (inputName == "MouseMove" && bools[0])
                 {
-                    // add progress based on vertical movement
-                    floats[0] = Mathf.Min(floats[0] + Mathf.Abs(obj.action.ReadValue<Vector2>().y) * 0.05f, 1750f);
+                    float addAmount = Mathf.Abs(obj.action.ReadValue<Vector2>().y) * 0.1f;
+
+                    if (transforms[0].position.y == transforms[1].position.y || transforms[0].position.y == transforms[2].position.y) addAmount *= 0.3f;
+
+                    floats[0] = Mathf.Min(floats[0] + addAmount, 1750f);
+
+                    Vector3 shakerPos = transforms[0].position + Vector3.up * obj.action.ReadValue<Vector2>().y * 0.15f;
+                    shakerPos.y = Mathf.Clamp(shakerPos.y, transforms[1].position.y, transforms[2].position.y);
+                    transforms[0].position = shakerPos;
+                    transforms[3].position = shakerPos;
                     // move parent of both shaker parts on y with mouse input, but clamped
+
                     if (floats[0] == 1750f)
                     {
                         bools[1] = true;
                         manager.toggleWin(true);
                         manager.lowerTimer(3);
-                    }
+
+                        transforms[0].position = transforms[8].position;
+                        transforms[3].position = transforms[8].position; // reset shaker to original position
+
+                        gameObjects[2].GetComponent<Image>().enabled = true;
+                        gameObjects[3].GetComponent<Image>().enabled = true;
+
+                        floats[2] = 0.85f;
+                    } // success
                 }
                 break;
             case mcg.Drive:
