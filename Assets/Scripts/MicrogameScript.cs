@@ -336,7 +336,7 @@ public class MicrogameScript : MonoBehaviour
                 floats[0] = Mathf.Max(floats[0] - deltaTime * 200f, 0f);
 
                 if (floats[0] == 0) gameObjects[4].GetComponent<Image>().fillAmount = 0;
-                else gameObjects[4].GetComponent<Image>().fillAmount = floats[0] / 1750f;
+                else gameObjects[4].GetComponent<Image>().fillAmount = floats[0] / 1250f;
 
                 //GameObject.Find("teText").GetComponent<TMP_Text>().text = floats[0] + "";
                 break;
@@ -351,8 +351,15 @@ public class MicrogameScript : MonoBehaviour
 
                 // transform 0: Pongon visual
 
+                // GO 0: Shibbi Rb
+                // GO 1: YOU prompt
+                // GO 2: jumpscare
+                // GO 3: chase music
+
                 float randRange = 2f;
                 transforms[0].localPosition = new Vector3(Random.Range(-randRange, randRange), Random.Range(-randRange, randRange), Random.Range(-randRange, randRange));
+
+                gameObjects[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 190f);
                 break;
             case mcg.Pray:
                 break;
@@ -494,6 +501,10 @@ public class MicrogameScript : MonoBehaviour
 
                 floats = new float[2];
 
+                transforms[0].GetComponentInParent<AnimationFunctions>().speed *= gameSpeed;
+                transforms[0].GetComponentInParent<Rigidbody2D>().linearVelocity = new Vector2(Random.Range(-1f, 0f), Random.Range(-1f, 1f)) * transforms[0].GetComponentInParent<AnimationFunctions>().speed;
+                transforms[0].GetComponentInParent<AnimationFunctions>().enabled = true;
+                gameObjects[3].SetActive(true);
                 break;
             case mcg.Pray:
                 break;
@@ -618,7 +629,7 @@ public class MicrogameScript : MonoBehaviour
 
                     if (transforms[0].position.y == transforms[1].position.y || transforms[0].position.y == transforms[2].position.y) addAmount *= 0.1f;
 
-                    floats[0] = Mathf.Min(floats[0] + addAmount, 1750f);
+                    floats[0] = Mathf.Min(floats[0] + addAmount, 1250f);
 
                     Vector3 shakerPos = transforms[0].position + Vector3.up * obj.action.ReadValue<Vector2>().y * 0.15f;
                     shakerPos.y = Mathf.Clamp(shakerPos.y, transforms[1].position.y, transforms[2].position.y);
@@ -626,7 +637,7 @@ public class MicrogameScript : MonoBehaviour
                     transforms[3].position = shakerPos;
                     // move parent of both shaker parts on y with mouse input, but clamped
 
-                    if (floats[0] == 1750f)
+                    if (floats[0] == 1250f)
                     {
                         bools[1] = true;
                         manager.toggleWin(true);
@@ -649,9 +660,38 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Chase:
                 if (inputName == "Movement")
                 {
+                    gameObjects[1].SetActive(false);
                     floats[0] = obj.action.ReadValue<Vector2>().x;
                     floats[1] = obj.action.ReadValue<Vector2>().y;
                 } // just move Shibbi
+                break;
+            case mcg.Pray:
+                break;
+            case mcg.Lag:
+                break;
+            case mcg.Dance:
+                break;
+            case mcg.Yap:
+                break;
+            case mcg.Boss0:
+                break;
+            case mcg.Boss1:
+                break;
+        }
+    }
+    public void doWin()
+    {
+        switch (microgameType)
+        {
+            case mcg.Drive:
+                break;
+            case mcg.LetIn:
+                break;
+            case mcg.Chase:
+                manager.toggleWin(true);
+                manager.lowerTimer(2);
+                gameObjects[2].SetActive(true);
+                gameObjects[3].SetActive(false);
                 break;
             case mcg.Pray:
                 break;
