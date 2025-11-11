@@ -14925,7 +14925,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MicrogameManager
   lifes: 4
-  currentMicrogameIndex: 0
+  currentMicrogameIndex: 8
   evilPGIndex: 4
   speedUpIndexes: 030000000600000009000000
   microgameList:
@@ -15019,7 +15019,7 @@ MonoBehaviour:
     isEPG: 0
   - name: Lag!
     altName: 
-    ownGO: {fileID: 0}
+    ownGO: {fileID: 1046156102}
     microgameTime: 10
     controls: 00000100
     stringVars: []
