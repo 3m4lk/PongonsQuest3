@@ -434,6 +434,6 @@ public class MicrogameManager : MonoBehaviour
     }
     public void lowerTimer(float amount)
     {
-        if (microgameTimer > amount) microgameTimer = amount;
+        microgameTimer = Mathf.Min(microgameTimer, amount); // changed because what the hell was that even
     }
 }

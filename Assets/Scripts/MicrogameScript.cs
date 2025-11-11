@@ -368,7 +368,47 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Dance:
                 break;
             case mcg.Yap:
-                break;
+
+                // int 0: current sound index
+                // int 1: progress
+
+                // bool 0: has finished
+
+                // float 0: anim duration (it has ~2-3 frames of closed mouth, them some time of mouth open, and the mouth closing when thr timer reaches 0)
+                // float 1: antiautoclick measure / sound minimum duration
+                // float 2: "subtitles by malk" time
+                // float 3: time till disappear subtitles
+
+                // transform 0: Shibbi
+
+                // GOs 0-9: yap sounds
+                // GO 10: raahh sound
+                // GO 11: subtitle mask
+                // GO 12: "subtitles by malk" text
+                // GO 13-14: Shibbi talk sprites
+                // GO 15: Shibbi final animation
+
+                if (!bools[0])
+                {
+                    //print(transforms[0].localPosition);
+
+                    floats[1] = Mathf.Max(floats[1] - deltaTime, 0f);
+                    Vector2 ShibPos = transforms[0].localPosition;
+                    ShibPos.y = Mathf.Lerp(33.1f, 20f, floats[1] / 0.12f);
+                    transforms[0].localPosition = ShibPos;
+
+                    floats[0] = Mathf.Max(floats[0] - deltaTime, 0f);
+                    bool isOpen = (floats[0] >= 0.1f || floats[0] == 0);
+                    gameObjects[13].SetActive(isOpen);
+                    gameObjects[14].SetActive(!isOpen);
+
+                    gameObjects[12].SetActive((floats[2] = Mathf.Max(floats[2] - deltaTime, 0f)) != 0);
+                } // if hasn't won yet
+                else
+                {
+                    gameObjects[11].SetActive((floats[3] = Mathf.Max(floats[3] - deltaTime, 0f)) != 0);
+                }
+                    break;
             case mcg.Boss0:
                 break;
             case mcg.Boss1:
@@ -513,6 +553,20 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Dance:
                 break;
             case mcg.Yap:
+
+                ints = new int[2];
+
+                floats = new float[4];
+
+                floats[2] = 3f;
+
+                bools = new bool[1];
+
+                for (int i = 0; i < 11; i++)
+                {
+                    gameObjects[i].GetComponent<AudioSource>().pitch = gameSpeed;
+                }
+
                 break;
             case mcg.Boss0:
                 break;
@@ -521,7 +575,6 @@ public class MicrogameScript : MonoBehaviour
         }
         isPlaying = true;
     }
-
     public void handleInput(InputAction.CallbackContext obj)
     {
         if (!isPlaying) return;
@@ -585,6 +638,7 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Quiz:
+                if (bools[0]) break;
                 if (inputName == "Movement")
                 {
                     //print(obj.action.ReadValue<Vector2>());
@@ -605,6 +659,7 @@ public class MicrogameScript : MonoBehaviour
                 }
                 else if (inputName == "Space")
                 {
+                    bools[0] = true;
                     manager.toggleWin(ints[0] == ints[1]);
                     gameObjects[5].SetActive(ints[0] == ints[1]);
                     gameObjects[6].SetActive(ints[0] != ints[1]);
@@ -643,6 +698,8 @@ public class MicrogameScript : MonoBehaviour
                         manager.toggleWin(true);
                         manager.lowerTimer(3);
 
+                        gameObjects[5].SetActive(false);
+
                         transforms[0].position = transforms[8].position;
                         transforms[3].position = transforms[8].position; // reset shaker to original position
 
@@ -672,6 +729,43 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Dance:
                 break;
             case mcg.Yap:
+                if (inputName == "Any" && mode && !bools[0])
+                {
+                    if (floats[1] == 0)
+                    {
+                        ints[1]++;
+
+                        //print(gameObjects[11].GetComponent<RectMask2D>().padding);
+                        gameObjects[11].GetComponent<RectMask2D>().padding = new Vector4(0, 0, 565f * (1f - (ints[1] / 48f)), 0);
+
+                        if (ints[1] == 48)
+                        {
+                            bools[0] = true;
+                            manager.toggleWin(true);
+                            manager.lowerTimer(3.5f);
+
+                            transforms[0].localPosition = new Vector2(transforms[0].localPosition.x, 33.1f);
+
+                            gameObjects[13].SetActive(false);
+                            gameObjects[14].SetActive(false);
+                            gameObjects[15].GetComponent<AudioSource>().pitch = gameSpeed;
+                            gameObjects[15].GetComponent<Animator>().speed = gameSpeed;
+                            gameObjects[15].SetActive(true);
+
+                            floats[3] = 0.85f;
+                        } // success!
+                        else
+                        {
+                            //print("ahh! " + mode);
+                            floats[1] = 0.06f;
+                            floats[0] = 0.15f;
+                            int randChance = Random.Range(0, 42);
+                            if (randChance == 6 || randChance == 7) gameObjects[10].GetComponent<AudioSource>().Play();
+                            else gameObjects[ints[0]].GetComponent<AudioSource>().Play();
+                            ints[0] = (int)Mathf.Repeat(ints[0] + 1, 10);
+                        } // continue
+                    }
+                }
                 break;
             case mcg.Boss0:
                 break;
@@ -696,8 +790,6 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Pray:
                 break;
             case mcg.Lag:
-                break;
-            case mcg.Dance:
                 break;
             case mcg.Yap:
                 break;

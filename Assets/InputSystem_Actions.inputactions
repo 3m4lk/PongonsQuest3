@@ -35,12 +35,12 @@
                 },
                 {
                     "name": "Any",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "8c6e9e06-65a3-45c3-bba2-d1e3bdf82b05",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "LClick",
@@ -489,7 +489,7 @@
                     "path": "<Keyboard>/anyKey",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard&Mouse",
                     "action": "Any",
                     "isComposite": false,
                     "isPartOfComposite": false
