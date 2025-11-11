@@ -366,6 +366,107 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Lag:
                 break;
             case mcg.Dance:
+
+                // int 0: current index
+                // int 1: next move (up, down, left, right)
+
+                // float 0: time until next arrow
+                // float 1: animation return time
+
+                // bool 0: is note
+                // bool 1: finished
+                // bool 2: misinput measure
+
+                // GO 0: Pongon
+                // GO 1: arrow
+                // GO 2: Shibbi container
+                // GO 3: Pongon victory
+                // GO 4: arrow interior (regular arrow, 1 is technically the outline)
+                // GO 5: explosion
+
+                // idle: (freeball it)
+                // up: Wriggle T
+                // down: Dedede crouch
+                // left: Wriggle leg up pose
+                // right: Wriggle side pose in the intro
+                // failure: eating shit
+
+                if (bools[1]) break;
+
+                if (floats[1] != 0)
+                {
+                    floats[1] = Mathf.Max(floats[1] - deltaTime, 0f);
+
+                    if (floats[1] == 0)
+                    {
+                        for (int i = 0; i < gameObjects[0].transform.childCount; i++)
+                        {
+                            gameObjects[0].transform.GetChild(i).gameObject.SetActive(false);
+                        }
+                        gameObjects[0].transform.GetChild(0).gameObject.SetActive(true);
+                    }
+                }
+
+                for (floats[0] -= deltaTime; floats[0] < 0; floats[0] += 1f)
+                {
+                    if (!bools[0])
+                    {
+                        bools[0] = true;
+                        ints[1] = Random.Range(0, 4);
+                        switch (ints[1])
+                        {
+                            case 0:
+                                gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 0);
+                                gameObjects[4].GetComponent<Image>().color = new Color32(255, 224, 0, 255);
+                                break; // up
+                            case 1:
+                                gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 180);
+                                gameObjects[4].GetComponent<Image>().color = new Color32(96, 255, 0, 255);
+                                break; // down
+                            case 2:
+                                gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 90);
+                                gameObjects[4].GetComponent<Image>().color = new Color32(0, 224, 255, 255);
+                                break; // left
+                            case 3:
+                                gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 270);
+                                gameObjects[4].GetComponent<Image>().color = new Color32(255, 0, 128, 255);
+                                break; // right
+                        }
+                        gameObjects[1].SetActive(true);
+                    }
+                    else
+                    {
+                        print("Failure (late)");
+                        manager.toggleWin(false);
+                        manager.lowerTimer(3);
+                        bools[1] = true;
+
+                        for (int i = 0; i < gameObjects[0].transform.childCount; i++)
+                        {
+                            gameObjects[0].transform.GetChild(i).gameObject.SetActive(false);
+                        }
+                        gameObjects[0].transform.GetChild(1).gameObject.SetActive(true);
+                        gameObjects[5].SetActive(true);
+
+                        gameObjects[1].SetActive(false);
+
+                        gameObjects[2].transform.GetChild(0).gameObject.SetActive(false);
+                        gameObjects[2].transform.GetChild(2).gameObject.SetActive(true);
+
+                        gameObjects[0].GetComponent<Animator>().speed = 0;
+
+                        return;
+                    } // failure
+                }
+
+                float angle = Mathf.Lerp(365f, 270f, floats[0]);
+
+                float sinVal = Mathf.Sin((angle * Mathf.PI) / 180f);
+                float cosVal = Mathf.Cos((angle * Mathf.PI) / 180f);
+                gameObjects[1].transform.localPosition = Vector2.up * -220f + new Vector2(sinVal, cosVal) * 284f;
+
+                gameObjects[1].GetComponent<Image>().enabled = (floats[0] <= 0.25f);
+
                 break;
             case mcg.Yap:
 
@@ -551,6 +652,47 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Lag:
                 break;
             case mcg.Dance:
+
+                floats = new float[2];
+                floats[0] = 1f;
+
+                bools = new bool[3];
+                bools[0] = true;
+
+                ints = new int[5];
+                ints[1] = Random.Range(0, 4);
+
+                switch (ints[1])
+                {
+                    case 0:
+                        gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 0);
+                        gameObjects[4].GetComponent<Image>().color = new Color32(255, 224, 0, 255);
+                        break; // up
+                    case 1:
+                        gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 180);
+                        gameObjects[4].GetComponent<Image>().color = new Color32(96, 255, 0, 255);
+                        break; // down
+                    case 2:
+                        gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 90);
+                        gameObjects[4].GetComponent<Image>().color = new Color32(0, 224, 255, 255);
+                        break; // left
+                    case 3:
+                        gameObjects[1].transform.localRotation = Quaternion.Euler(0, 0, 270);
+                        gameObjects[4].GetComponent<Image>().color = new Color32(255, 0, 128, 255);
+                        break; // right
+                }
+                gameObjects[1].transform.localPosition = new Vector2(-284f, -220f);
+                gameObjects[1].SetActive(true);
+
+                gameObjects[0].GetComponent<Animator>().speed = gameSpeed;
+                gameObjects[0].GetComponent<Animator>().enabled = true;
+
+                gameObjects[6].GetComponent<Animator>().speed = gameSpeed;
+                gameObjects[6].GetComponent<Animator>().enabled = true;
+
+                gameObjects[2].transform.GetChild(1).GetComponent<Animator>().speed = gameSpeed;
+                gameObjects[2].transform.GetChild(2).GetComponent<Animator>().speed = gameSpeed;
+
                 break;
             case mcg.Yap:
 
@@ -727,6 +869,81 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Lag:
                 break;
             case mcg.Dance:
+                if (inputName == "Movement" && !bools[1])
+                {
+                    if (mode && !bools[2])
+                    {
+                        bools[2] = true;
+                        print("YEAH");
+                        Vector2 inp = obj.action.ReadValue<Vector2>();
+                        bool direCheck = (Vector2.Dot(inp, Vector2.up) >= 0.9f && ints[1] == 0 || Vector2.Dot(inp, Vector2.down) >= 0.9f && ints[1] == 1 || Vector2.Dot(inp, Vector2.left) >= 0.9f && ints[1] == 2 || Vector2.Dot(inp, Vector2.right) >= 0.9f && ints[1] == 3);
+
+                        // print(Vector2.Dot(Vector2.up, Vector2.up) + " dot");
+
+                        if (direCheck && bools[0] && floats[0] <= 0.25f)
+                        {
+                            gameObjects[1].SetActive(false);
+                            if (ints[4] != 3)
+                            {
+                                bools[0] = false;
+                                print("bump...");
+                                ints[4]++;
+                                // bump
+
+                                for (int i = 0; i < gameObjects[0].transform.childCount; i++)
+                                {
+                                    gameObjects[0].transform.GetChild(i).gameObject.SetActive(false);
+                                }
+                                gameObjects[0].transform.GetChild(ints[1] + 2).gameObject.SetActive(true);
+
+                                floats[1] = 0.5f;
+                            }
+                            else
+                            {
+                                print("Success");
+                                manager.toggleWin(true);
+                                manager.lowerTimer(5); // 5 because fortnite dance
+
+                                gameObjects[0].SetActive(false);
+                                gameObjects[3].GetComponent<Animator>().speed = gameSpeed;
+                                gameObjects[3].SetActive(true);
+
+                                // swap Shibbi sprite
+
+                                bools[1] = true;
+
+                                gameObjects[2].transform.GetChild(0).gameObject.SetActive(false);
+                                gameObjects[2].transform.GetChild(1).gameObject.SetActive(true);
+
+                                break;
+                            } // victory
+                        }
+                        else
+                        {
+                            for (int i = 0; i < gameObjects[0].transform.childCount; i++)
+                            {
+                                gameObjects[0].transform.GetChild(i).gameObject.SetActive(false);
+                            }
+                            gameObjects[0].transform.GetChild(1).gameObject.SetActive(true);
+                            gameObjects[5].SetActive(true);
+
+                            print("Failure (miss)");
+                            manager.toggleWin(false);
+                            manager.lowerTimer(3);
+                            bools[1] = true;
+
+                            gameObjects[1].SetActive(false);
+
+                            gameObjects[2].transform.GetChild(0).gameObject.SetActive(false);
+                            gameObjects[2].transform.GetChild(2).gameObject.SetActive(true);
+
+                            gameObjects[0].GetComponent<Animator>().speed = 0;
+
+                            break;
+                        } // failure
+                    }
+                    else if (!mode) bools[2] = false;
+                }
                 break;
             case mcg.Yap:
                 if (inputName == "Any" && mode && !bools[0])

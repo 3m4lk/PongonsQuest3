@@ -137,6 +137,8 @@ public class MicrogameManager : MonoBehaviour
 
     private float initialWait = 2f;
 
+    private object[] fortniteSprites;
+
     private void Awake()
     {
         if (!devMode) buildMGList();
@@ -149,6 +151,8 @@ public class MicrogameManager : MonoBehaviour
         bgTransform.gameObject.SetActive(true);
         bpmSpeed = 12f;
         initialWait = 2f;
+
+        fortniteSprites = Resources.LoadAll("Placeholders/Microgames/Dance", typeof(Sprite));
     }
     private void Update()
     {
