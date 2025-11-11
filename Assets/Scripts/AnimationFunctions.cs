@@ -59,11 +59,12 @@ public class AnimationFunctions : MonoBehaviour
         GetComponent<Rigidbody2D>().linearVelocity = veloDire * speed;
         changeDire = Random.Range(0.6f, 1.4f);
     }
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
-        if (speed != 0 && collision.name == "Shibbi")
+        MicrogameManager manager = GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>();
+        if (speed != 0 && collision.name == "Shibbi") // && manager.microgames[manager.currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().bools[0])
         {
-            GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>().microgames[GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>().currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().doWin();
+            manager.microgames[manager.currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().doWin();
             gameObject.SetActive(false);
         }
     }

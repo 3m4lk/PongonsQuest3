@@ -348,6 +348,9 @@ public class MicrogameScript : MonoBehaviour
 
                 // float 0: input x
                 // float 1: input y
+                // // float 2: changeDire
+
+                // bool 0: setup check
 
                 // transform 0: Pongon visual
 
@@ -355,6 +358,19 @@ public class MicrogameScript : MonoBehaviour
                 // GO 1: YOU prompt
                 // GO 2: jumpscare
                 // GO 3: chase music
+
+                /*if (!bools[0])
+                {
+                    bools[0] = true;
+
+                    print(floats[2]);
+
+                    transforms[0].GetComponentInParent<AnimationFunctions>().speed *= gameSpeed;
+                    transforms[0].GetComponentInParent<Rigidbody2D>().linearVelocity = new Vector2(Random.Range(Mathf.Min(0f, floats[2]), Mathf.Max(0f, floats[2])), Random.Range(-1f, 1f)) * transforms[0].GetComponentInParent<AnimationFunctions>().speed;
+                    transforms[0].GetComponentInParent<AnimationFunctions>().enabled = true;
+
+                    gameObjects[0].name = "Shibbi";
+                }//*/
 
                 float randRange = 2f;
                 transforms[0].localPosition = new Vector3(Random.Range(-randRange, randRange), Random.Range(-randRange, randRange), Random.Range(-randRange, randRange));
@@ -364,6 +380,63 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Pray:
                 break;
             case mcg.Lag:
+
+                // int 0: last index spawned
+
+                // float 0: progress
+                // float 1: pitch & volume lower time
+
+                // bool 0: has Player pressed
+                // bool 1: has Player won
+
+                // transforms 0-2: Pongons
+
+                // GO 0: music
+                // GO 1: stop sign
+                // GO 2: Player indicator
+                // GO 3: Player Pongon
+                // GO 4: victory animation
+                // GO 5: Pongon outline
+
+                if (floats[1] != -1)
+                {
+                    floats[1] = Mathf.Max(floats[1] - deltaTime, 0f);
+                    gameObjects[0].GetComponent<AudioSource>().pitch = floats[1] * 0.5f;
+                    break;
+                }
+
+                floats[0] = Mathf.Min(floats[0] + deltaTime, 6.531f);
+
+                gameObjects[5].SetActive(floats[0] >= 1.224f && floats[0] <= 1.663f);
+
+                for (int i = 0; i < transforms.Length; i++)
+                {
+                    Vector2 locPos = transforms[i].localPosition;
+                    locPos.y = curves[i].Evaluate(floats[0]);
+                    transforms[i].localPosition = locPos;
+                }
+
+                gameObjects[1].SetActive(floats[0] < 1.633f);
+
+                if (floats[0] >= 3.265f && !gameObjects[4].activeInHierarchy)
+                {
+                    if (bools[1])
+                    {
+                        bools[1] = false;
+                        gameObjects[4].GetComponentInChildren<Animator>().speed = gameSpeed;
+                        gameObjects[4].SetActive(true);
+                    } // victory animation
+                    else
+                    {
+                        floats[1] = 2f;
+                        manager.toggleWin(false);
+                        manager.lowerTimer(3);
+                    } // Failure (too late)
+                }
+
+                // window of error: 0.2 sec. (0.1 sec. before & 0.1 sec. after)
+                // if passes that threshold, do the ending based on Player input
+
                 break;
             case mcg.Dance:
 
@@ -640,16 +713,32 @@ public class MicrogameScript : MonoBehaviour
                 break;
             case mcg.Chase:
 
+                //bools = new bool[1];
+
                 floats = new float[2];
+                //floats[2] = -1f;
+
+                gameObjects[0].GetComponent<Animator>().speed = gameSpeed;
 
                 transforms[0].GetComponentInParent<AnimationFunctions>().speed *= gameSpeed;
                 transforms[0].GetComponentInParent<Rigidbody2D>().linearVelocity = new Vector2(Random.Range(-1f, 0f), Random.Range(-1f, 1f)) * transforms[0].GetComponentInParent<AnimationFunctions>().speed;
                 transforms[0].GetComponentInParent<AnimationFunctions>().enabled = true;
+
+                gameObjects[3].GetComponent<AudioSource>().pitch = gameSpeed;
                 gameObjects[3].SetActive(true);
                 break;
             case mcg.Pray:
                 break;
             case mcg.Lag:
+
+                floats = new float[2];
+                floats[1] = -1;
+
+                bools = new bool[2];
+
+                gameObjects[0].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[0].GetComponent<AudioSource>().Play();
+
                 break;
             case mcg.Dance:
 
@@ -867,6 +956,25 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Pray:
                 break;
             case mcg.Lag:
+                if (inputName == "Space" && !bools[0] && floats[0] >= 1.633f && mode)
+                {
+                    bools[0] = true;
+                    gameObjects[2].SetActive(false);
+
+                    if (floats[0] >= 2.757f && floats[0] <= 2.957f)
+                    {
+                        bools[1] = true;
+                        manager.toggleWin(true);
+                        print("Success!");
+                        gameObjects[3].SetActive(true);
+                    } // Success
+                    else
+                    {
+                        floats[1] = 2f;
+                        manager.toggleWin(false);
+                        manager.lowerTimer(3);
+                    } // Failure (missed)
+                }
                 break;
             case mcg.Dance:
                 if (inputName == "Movement" && !bools[1])
@@ -994,25 +1102,13 @@ public class MicrogameScript : MonoBehaviour
     {
         switch (microgameType)
         {
-            case mcg.Drive:
-                break;
-            case mcg.LetIn:
-                break;
             case mcg.Chase:
                 manager.toggleWin(true);
                 manager.lowerTimer(2);
+                gameObjects[2].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[2].GetComponentInChildren<Animator>().speed = gameSpeed;
                 gameObjects[2].SetActive(true);
                 gameObjects[3].SetActive(false);
-                break;
-            case mcg.Pray:
-                break;
-            case mcg.Lag:
-                break;
-            case mcg.Yap:
-                break;
-            case mcg.Boss0:
-                break;
-            case mcg.Boss1:
                 break;
         }
     }

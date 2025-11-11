@@ -141,7 +141,12 @@ public class MicrogameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (!devMode) buildMGList();
+        if (!devMode)
+        {
+            buildMGList();
+            playMicrogame(currentMicrogameIndex);
+            transAnimProgress = transAnimTime;
+        }
         else
         {
             microgames = cloneMGArray(microgameList);
@@ -305,6 +310,8 @@ public class MicrogameManager : MonoBehaviour
 
             if (microgameTimer == 0f)
             {
+                if (microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().microgameType == mcg.Chase) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().transforms[0].parent.gameObject.SetActive(false);
+
                 print("boot back to main scene!");
                 if (currentMicrogameIndex < microgames.Length) currentMicrogameIndex++; // stage will move up unless Player is at the Boss Stage
                 transAnimDire = -1f;
@@ -378,6 +385,24 @@ public class MicrogameManager : MonoBehaviour
                 microgames[index].ownGO.GetComponent<MicrogameScript>().gameObjects[randChoice].SetActive(true); // set character as active
                 microgames[index].ownGO.GetComponent<MicrogameScript>().gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
                 break; // choose shake target randomly (Pongon / Shibbi)
+            /*case "Chase!":
+
+                MicrogameScript mcg = microgames[index].ownGO.GetComponent<MicrogameScript>();
+
+                if (Random.Range(0, 2) == 1)
+                {
+                    mcg.transforms[0].gameObject.SetActive(false);
+                    mcg.gameObjects[0].SetActive(false);
+
+                    mcg.floats[2] = 1f;
+                    Vector2 keepPos = mcg.transforms[0].localPosition;
+                    mcg.transforms[0].localPosition = mcg.gameObjects[0].transform.localPosition;
+                    mcg.gameObjects[0].transform.localPosition = keepPos;
+
+                    mcg.transforms[0].gameObject.SetActive(true);
+                    mcg.gameObjects[0].SetActive(true);
+                }
+                break;//*/
         }
 
         for (int i = 0; i < microgames[index].controls.Length; i++)
