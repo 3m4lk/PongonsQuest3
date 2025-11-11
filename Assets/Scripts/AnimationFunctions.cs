@@ -7,6 +7,8 @@ public class AnimationFunctions : MonoBehaviour
     private Vector2 velo;
     private bool applyVelo;
     private float changeDire = 1f, gameSpeed;
+
+    public bool isTouhou;
     private void Awake()
     {
         gameSpeed = GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>().gameSpeed;
@@ -41,11 +43,18 @@ public class AnimationFunctions : MonoBehaviour
             }
         }
 
-            if (applyVelo)
+        if (applyVelo)
+        {
+            applyVelo = false;
+
+            Vector2 targetPos = GetComponent<Rigidbody2D>().position + velo * Time.fixedDeltaTime;
+            if (isTouhou)
             {
-                applyVelo = false;
-                GetComponent<Rigidbody2D>().MovePosition(GetComponent<Rigidbody2D>().position + velo * Time.fixedDeltaTime);
+                targetPos.x = Mathf.Clamp(targetPos.x, 60f, 310f);
+                targetPos.y = Mathf.Clamp(targetPos.y, 60f, 420f);
             }
+            GetComponent<Rigidbody2D>().MovePosition(targetPos);
+        }
     }
     public void setVelo(Vector2 input)
     {
@@ -54,6 +63,7 @@ public class AnimationFunctions : MonoBehaviour
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (isTouhou) return;
         Vector2 veloDire = (GetComponent<Rigidbody2D>().linearVelocity.normalized + new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f))).normalized;
 
         GetComponent<Rigidbody2D>().linearVelocity = veloDire * speed;
@@ -61,11 +71,34 @@ public class AnimationFunctions : MonoBehaviour
     }
     private void OnTriggerStay2D(Collider2D collision)
     {
-        MicrogameManager manager = GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>();
-        if (speed != 0 && collision.name == "Shibbi") // && manager.microgames[manager.currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().bools[0])
+        if (!isTouhou)
         {
-            manager.microgames[manager.currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().doWin();
-            gameObject.SetActive(false);
+            MicrogameManager manager = GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>();
+            if (speed != 0 && collision.name == "Shibbi") // && manager.microgames[manager.currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().bools[0])
+            {
+                manager.microgames[manager.currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().doWin();
+                gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            if (objects[0].GetComponent<MicrogameScript>().floats[3] == 0)
+            {
+                print("harmed");
+                objects[0].GetComponent<MicrogameScript>().ints[0]--;
+                if (objects[0].GetComponent<MicrogameScript>().ints[0] <= 0)
+                {
+                    print("died!");
+                    objects[0].GetComponent<MicrogameScript>().getManager().toggleWin(false);
+                    objects[0].GetComponent<MicrogameScript>().getManager().lowerTimer(3);
+                    gameObject.SetActive(false);
+                } // failure
+                else
+                {
+                    objects[0].GetComponent<MicrogameScript>().floats[3] = 1f;
+                    if (collision.name != "boss") Destroy(collision.gameObject);
+                }
+            }
         }
     }
 }

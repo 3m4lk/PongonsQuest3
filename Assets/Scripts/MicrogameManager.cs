@@ -139,6 +139,10 @@ public class MicrogameManager : MonoBehaviour
 
     private object[] fortniteSprites;
 
+    private microgame currentMg;
+
+    private bool wasBoss = false;
+
     private void Awake()
     {
         if (!devMode)
@@ -221,15 +225,30 @@ public class MicrogameManager : MonoBehaviour
 
             if (resultTimer == 0)
             {
-                for (int i = 0; i < speedUpIndexes.Length; i++)
+                if (currentMicrogameIndex == microgames.Length)
                 {
-                    if (currentMicrogameIndex == speedUpIndexes[i])
+                    if (!wasBoss)
                     {
-                        print("SPEED UP TIME SET");
-                        speedUpTimer = 3f;
-                        bpmSpeed += 1f;
-                        gameSpeed = bpmSpeed / 12f;
-                        return;
+                        wasBoss = true;
+                        print("BOSS");
+                        bossTimer = 3f;
+                        bpmSpeed = 10;
+                        gameSpeed = 1;
+                    }
+                    return;
+                } // Boss
+                else
+                {
+                    for (int i = 0; i < speedUpIndexes.Length; i++)
+                    {
+                        if (currentMicrogameIndex == speedUpIndexes[i])
+                        {
+                            print("SPEED UP TIME SET");
+                            speedUpTimer = 3f;
+                            bpmSpeed += 1f;
+                            gameSpeed = bpmSpeed / 12f;
+                            return;
+                        }
                     }
                 }
 
@@ -279,7 +298,7 @@ public class MicrogameManager : MonoBehaviour
                 lastTAP = transAnimProgress;
                 //print("ENDED!");
 
-                if (microgames[currentMicrogameIndex].ownGO) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().startMG();
+                if (currentMg.ownGO) currentMg.ownGO.GetComponent<MicrogameScript>().startMG();
                 bgTransform.gameObject.SetActive(false);
                 gameName.enabled = false;
             }
@@ -302,7 +321,7 @@ public class MicrogameManager : MonoBehaviour
             return;
         }
 
-        if (microgames[currentMicrogameIndex].ownGO && microgameTimer != 0)
+        if (currentMg.ownGO && microgameTimer != 0)
         {
             microgameTimer = Mathf.Max(microgameTimer - deltaTime * gameSpeed, 0f);
 
@@ -310,7 +329,7 @@ public class MicrogameManager : MonoBehaviour
 
             if (microgameTimer == 0f)
             {
-                if (microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().microgameType == mcg.Chase) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().transforms[0].parent.gameObject.SetActive(false);
+                if (currentMg.ownGO.GetComponent<MicrogameScript>().microgameType == mcg.Chase) currentMg.ownGO.GetComponent<MicrogameScript>().transforms[0].parent.gameObject.SetActive(false);
 
                 print("boot back to main scene!");
                 if (currentMicrogameIndex < microgames.Length) currentMicrogameIndex++; // stage will move up unless Player is at the Boss Stage
@@ -370,50 +389,55 @@ public class MicrogameManager : MonoBehaviour
         {
             if (microgames[i].ownGO) microgames[i].ownGO.SetActive(i == index);
         }
+        boss.ownGO.SetActive(index == microgames.Length);
 
-        switch (microgames[index].name)
+        currentMg = boss;
+
+        if (index != microgames.Length) currentMg = microgames[index];
+
+        switch (currentMg.name)
         {
             case "Let in!":
                 if (Random.Range(0, 2) == 1)
                 {
-                    microgames[index].name = microgames[index].altName;
+                    currentMg.name = currentMg.altName;
                 }
                 break; // choose randomly the type (let / dont let in)
             case "Shake!":
 
                 int randChoice = Random.Range(0, 2);
-                microgames[index].ownGO.GetComponent<MicrogameScript>().gameObjects[randChoice].SetActive(true); // set character as active
-                microgames[index].ownGO.GetComponent<MicrogameScript>().gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
+                currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[randChoice].SetActive(true); // set character as active
+                currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
                 break; // choose shake target randomly (Pongon / Shibbi)
-            /*case "Chase!":
+                /*case "Chase!":
 
-                MicrogameScript mcg = microgames[index].ownGO.GetComponent<MicrogameScript>();
+                    MicrogameScript mcg = currentMg.ownGO.GetComponent<MicrogameScript>();
 
-                if (Random.Range(0, 2) == 1)
-                {
-                    mcg.transforms[0].gameObject.SetActive(false);
-                    mcg.gameObjects[0].SetActive(false);
+                    if (Random.Range(0, 2) == 1)
+                    {
+                        mcg.transforms[0].gameObject.SetActive(false);
+                        mcg.gameObjects[0].SetActive(false);
 
-                    mcg.floats[2] = 1f;
-                    Vector2 keepPos = mcg.transforms[0].localPosition;
-                    mcg.transforms[0].localPosition = mcg.gameObjects[0].transform.localPosition;
-                    mcg.gameObjects[0].transform.localPosition = keepPos;
+                        mcg.floats[2] = 1f;
+                        Vector2 keepPos = mcg.transforms[0].localPosition;
+                        mcg.transforms[0].localPosition = mcg.gameObjects[0].transform.localPosition;
+                        mcg.gameObjects[0].transform.localPosition = keepPos;
 
-                    mcg.transforms[0].gameObject.SetActive(true);
-                    mcg.gameObjects[0].SetActive(true);
-                }
-                break;//*/
+                        mcg.transforms[0].gameObject.SetActive(true);
+                        mcg.gameObjects[0].SetActive(true);
+                    }
+                    break;//*/
         }
 
-        for (int i = 0; i < microgames[index].controls.Length; i++)
+        for (int i = 0; i < currentMg.controls.Length; i++)
         {
-            controlIcons[i].SetActive(microgames[index].controls[i]);
+            controlIcons[i].SetActive(currentMg.controls[i]);
         }
-        controlIcons[controlIcons.Length - 1].SetActive(microgames[index].isEPG);
+        controlIcons[controlIcons.Length - 1].SetActive(currentMg.isEPG);
 
-        doMicrogameText(microgames[index].name);
+        doMicrogameText(currentMg.name);
 
-        microgameTimer = microgames[index].microgameTime;
+        microgameTimer = currentMg.microgameTime;
     }
     public void doMicrogameText(string input)
     {
@@ -459,7 +483,7 @@ public class MicrogameManager : MonoBehaviour
     }
     public void handleInput(InputAction.CallbackContext obj)
     {
-        if (transAnimProgress == 0) microgames[currentMicrogameIndex].ownGO.GetComponent<MicrogameScript>().handleInput(obj);
+        if (transAnimProgress == 0) currentMg.ownGO.GetComponent<MicrogameScript>().handleInput(obj);
     }
     public void lowerTimer(float amount)
     {

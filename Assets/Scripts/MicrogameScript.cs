@@ -584,8 +584,41 @@ public class MicrogameScript : MonoBehaviour
                 }
                     break;
             case mcg.Boss0:
-                break;
-            case mcg.Boss1:
+
+                // int 0: health
+                // int 1: boss phase (0: survival; 1: charging (mash space))
+
+                // floats 0-1: Player movement vector
+                // float 2: boss duration (till Charge!)
+                // float 3: i-frames
+
+                // bool 0: is alive
+
+                // transform 0: Player
+                // transform 1: Boss (Stan Luciferin)
+
+                // GO 0: 
+
+
+                // endurance / survival for 30 seconds
+
+                // 0-10: 1 bullet
+                // 11-15: 2 bullets
+                // 16-22: 4 bullets
+                // 23-30: 8 bullets
+
+                // 5: curvers (first gentle, then with higher curves)
+                // 12: giants (first single then triple)
+                // 20: spawners (first slow, then those shooting little shits)
+
+                floats[3] = Mathf.Max(floats[3] - deltaTime, 0f);
+
+                transforms[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 128f);
+
+                //print(transforms[0].GetComponent<Rigidbody2D>().position);
+
+                if (!bools[0]) break;
+
                 break;
         }
     }
@@ -800,6 +833,15 @@ public class MicrogameScript : MonoBehaviour
 
                 break;
             case mcg.Boss0:
+
+                floats = new float[4];
+
+                ints = new int[1];
+                ints[0] = 5;
+
+                bools = new bool[1];
+                bools[0] = true;
+
                 break;
             case mcg.Boss1:
                 break;
@@ -1093,8 +1135,14 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Boss0:
-                break;
-            case mcg.Boss1:
+                if (inputName == "Movement")
+                {
+                    floats[0] = 0;
+                    floats[1] = 0;
+
+                    if (obj.action.ReadValue<Vector2>().x != 0) floats[0] = Mathf.Sign(obj.action.ReadValue<Vector2>().x);
+                    if (obj.action.ReadValue<Vector2>().y != 0) floats[1] = Mathf.Sign(obj.action.ReadValue<Vector2>().y);
+                }
                 break;
         }
     }
@@ -1111,5 +1159,9 @@ public class MicrogameScript : MonoBehaviour
                 gameObjects[3].SetActive(false);
                 break;
         }
+    }
+    public MicrogameManager getManager()
+    {
+        return manager;
     }
 }
