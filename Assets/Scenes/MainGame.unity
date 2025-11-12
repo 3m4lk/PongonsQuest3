@@ -24131,7 +24131,7 @@ MonoBehaviour:
   lifes: 4
   bgAnimator: {fileID: 92662428}
   cableAnim: {fileID: 1058829077}
-  currentMicrogameIndex: 7
+  currentMicrogameIndex: 0
   evilPGIndex: 5
   speedUpIndexes: 030000000600000009000000
   microgameList:
@@ -24260,7 +24260,7 @@ MonoBehaviour:
   - {fileID: 1814606552}
   gameName: {fileID: 622051863}
   stageCount: {fileID: 247106914}
-  devMode: 1
+  devMode: 0
   transAnimTime: 1
   transAnimProgress: 0
   transAnimDire: 1
@@ -24985,6 +24985,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 9caa3d8a-6b2f-4e8e-8bad-6ede561bd9be
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: dd766dd6-0989-45e6-8c74-3cef3a53d2d1
+    m_ActionName: 'Player/Esc[/Keyboard/escape]'
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: Keyboard&Mouse
   m_DefaultActionMap: Player
