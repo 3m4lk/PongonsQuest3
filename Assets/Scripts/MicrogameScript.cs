@@ -715,7 +715,7 @@ public class MicrogameScript : MonoBehaviour
                             continue;
                         }
                         allStars[i].transform.position += Vector3.ClampMagnitude(transforms[0].position - allStars[i].transform.position, 896f * deltaTime);
-                        if (Vector3.Distance(transforms[0].position, allStars[i].transform.position) <= 3f && ints[2] < 98)
+                        if (Vector3.Distance(transforms[0].position, allStars[i].transform.position) <= 3f && ints[2] < 48)
                         {
                             ints[2]++;
                             Destroy(allStars[i]);
@@ -1254,8 +1254,9 @@ public class MicrogameScript : MonoBehaviour
                 else if (inputName == "Space" && ints[1] == 1 && mode)
                 {
                     ints[2]++;
-                    if (ints[2] == 100)
+                    if (ints[2] == 50)
                     {
+                        print("Victory!");
                         manager.toggleWin(true);
                         // run the cutscene
                     } // Success!
