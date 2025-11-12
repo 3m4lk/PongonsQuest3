@@ -1,4 +1,5 @@
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -118,5 +119,9 @@ public class AnimationFunctions : MonoBehaviour
     public void moveScenes(int index)
     {
         SceneManager.LoadScene(index);
+    }
+    public void deacSelf()
+    {
+        gameObject.SetActive(false);
     }
 }

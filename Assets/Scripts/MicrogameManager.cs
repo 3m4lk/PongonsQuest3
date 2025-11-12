@@ -72,9 +72,11 @@ public class microgame
 }
 public class MicrogameManager : MonoBehaviour
 {
+    public AudioSource speedSound, mainMus;
+
     public int lifes;
 
-    public Animator bgAnimator;
+    public Animator bgAnimator, cableAnim;
 
     [Space]
     public int currentMicrogameIndex;
@@ -144,7 +146,7 @@ public class MicrogameManager : MonoBehaviour
 
     private microgame currentMg;
 
-    private bool wasBoss = false;
+    public bool wasBoss = false;
 
     public float bossDefeatedCooldown;
     public bool wasBossDefeated;
@@ -152,6 +154,10 @@ public class MicrogameManager : MonoBehaviour
     public GameObject[] lifeIcons, lifeRemoveIcons;
 
     public float gameOverTime;
+
+    public bool dontKill;
+
+    public GameObject bossVis;
 
     private void Awake()
     {
@@ -172,6 +178,8 @@ public class MicrogameManager : MonoBehaviour
         initialWait = 2f;
 
         fortniteSprites = Resources.LoadAll("Placeholders/Microgames/Dance", typeof(Sprite));
+
+        mainMus.mute = false;
     }
     private void Update()
     {
@@ -219,6 +227,7 @@ public class MicrogameManager : MonoBehaviour
             {
                 gameName.enabled = true;
                 gameName.transform.localScale = Vector3.one * gnScaleCurve.Evaluate(0);
+                mainMus.mute = false;
             }
 
             return;
@@ -228,7 +237,11 @@ public class MicrogameManager : MonoBehaviour
         {
             bossTimer = Mathf.Max(bossTimer - deltaTime, 0f);
 
-            if (bossTimer == 0) controlsTimer = 2.5f;
+            if (bossTimer == 0)
+            { 
+                controlsTimer = 2.5f;
+                mainMus.mute = false;
+            }
 
             return;
         }
@@ -245,7 +258,11 @@ public class MicrogameManager : MonoBehaviour
             speedVisUp.position = Vector3.Lerp(spvuPoints[0].position, spvuPoints[1].position, speedVisCurve.Evaluate(suMult));
             speedVis0.alpha = speedVisAlphaCurve.Evaluate(suMult);
 
-            if (speedUpTimer == 0) controlsTimer = 2.5f;
+            if (speedUpTimer == 0)
+            {
+                controlsTimer = 2.5f;
+                mainMus.mute = false;
+            }
 
             return;
         }
@@ -254,7 +271,11 @@ public class MicrogameManager : MonoBehaviour
         {
             resultTimer = Mathf.Max(resultTimer - deltaTime, 0f);
 
-            if (resultTimer <= 1f) resVisChange(0);
+            if (resultTimer <= 1f)
+            {
+                resVisChange(0);
+                mainMus.pitch = gameSpeed;
+            }
 
             if (resultTimer == 0)
             {
@@ -263,6 +284,14 @@ public class MicrogameManager : MonoBehaviour
                 {
                     bossDefeatedCooldown = 6f;
                     return;
+                }
+                else if (lifes == 0)
+                {
+                    gameOverTime = 6f;
+                    bpmSpeed = 1;
+                    gameSpeed = 1;
+                    updateAnimSpeeds(0.05f);
+                    resVisChange(2);
                 }
                 else if (currentMicrogameIndex == microgames.Length)
                 {
@@ -273,7 +302,12 @@ public class MicrogameManager : MonoBehaviour
                         bossTimer = 3f;
                         bpmSpeed = 10;
                         gameSpeed = 1;
-                        bgAnimator.speed = 1;
+
+                        bossVis.SetActive(true);
+
+                        mainMus.mute = true;
+
+                        updateAnimSpeeds(1f);
                     }
                     return;
                 } // Boss
@@ -288,7 +322,10 @@ public class MicrogameManager : MonoBehaviour
                             bpmSpeed += 1f;
                             gameSpeed = bpmSpeed / 12f;
 
-                            bgAnimator.speed = gameSpeed;
+                            //mainMus.mute = true;
+
+                            updateAnimSpeeds(gameSpeed);
+                            speedSound.Play();
                             return;
                         }
                     }
@@ -342,8 +379,13 @@ public class MicrogameManager : MonoBehaviour
 
                 if (currentMg.ownGO)
                 {
-                    if (currentMg.ownGO.GetComponent<AudioSource>()) currentMg.ownGO.GetComponent<AudioSource>().Play();
+                    if (currentMg.ownGO.GetComponent<AudioSource>())
+                    {
+                        currentMg.ownGO.GetComponent<AudioSource>().pitch = gameSpeed;
+                        currentMg.ownGO.GetComponent<AudioSource>().Play();
+                    }
                     currentMg.ownGO.GetComponent<MicrogameScript>().startMG();
+                    mainMus.mute = true;
                 }
                 bgTransform.gameObject.SetActive(false);
                 gameName.enabled = false;
@@ -375,6 +417,8 @@ public class MicrogameManager : MonoBehaviour
 
             if (microgameTimer == 0f)
             {
+                bossVis.SetActive(false);
+                mainMus.mute = false;
                 if (currentMg.ownGO.GetComponent<MicrogameScript>().microgameType == mcg.Chase) currentMg.ownGO.GetComponent<MicrogameScript>().transforms[0].parent.gameObject.SetActive(false);
                 if (currentMg.ownGO.GetComponent<AudioSource>()) currentMg.ownGO.GetComponent<AudioSource>().Stop();
 
@@ -386,19 +430,28 @@ public class MicrogameManager : MonoBehaviour
                 bgTransform.gameObject.SetActive(true);
 
                 if (winState) resVisChange(1);
-                else resVisChange(2);
-                // do vis based on win status
-
-                lifes--;
-                lifeIcons[lifes].SetActive(false);
-                lifeRemoveIcons[lifes].SetActive(true);
-                if (lifes == 0)
+                else
                 {
-                    print("YOU DIED!");
-                    gameOverTime = 6f;
-                    //gameObject.SetActive(false); // for now...
-                    return; // kinda pointless but whatever
+                    resVisChange(2);
+                    mainMus.pitch *= 0.5f;
+
+                    if (!dontKill || lifes != 1)
+                    {
+
+                        lifes--;
+                        lifeIcons[lifes].SetActive(false);
+                        lifeRemoveIcons[lifes].SetActive(true);
+                        if (lifes == 0)
+                        {
+                            print("YOU DIED!");
+                            resVisChange(2);
+                            //gameObject.SetActive(false); // for now... // nuh uh
+                            //return; // kinda pointless but whatever // nah
+                        }
+                    }
                 }
+                // do vis based on win status
+                dontKill = false;
             }
         }
     }
@@ -546,5 +599,19 @@ public class MicrogameManager : MonoBehaviour
     public void lowerTimer(float amount)
     {
         microgameTimer = Mathf.Min(microgameTimer, amount); // changed because what the hell was that even
+    }
+
+    void updateAnimSpeeds(float input)
+    {
+        bgAnimator.speed = input;
+        cableAnim.speed = input;
+
+        speedSound.pitch = input;
+        mainMus.pitch = input;
+
+        for (int i = 0; i < lifeRemoveIcons.Length; i++)
+        {
+            lifeRemoveIcons[i].GetComponent<Animator>().speed = input;
+        }
     }
 }

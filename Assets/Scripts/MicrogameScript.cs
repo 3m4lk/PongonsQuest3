@@ -70,6 +70,11 @@ public class MicrogameScript : MonoBehaviour
                 // gameObject 4: death explosion;
                 // gameObject 5: victory explosion;
                 // gameObject 6: parry fail;
+                // GO 7: ...?
+                // GO 8: parry sound
+                // GO 8: explosion sound
+                // GO 8: fail sound
+
                 if (floats[4] != 0)
                 {
                     floats[4] = Mathf.Max(floats[4] - deltaTime, 0f);
@@ -82,6 +87,9 @@ public class MicrogameScript : MonoBehaviour
                         gameObjects[0].SetActive(false);
                         gameObjects[1].SetActive(true);
                         gameObjects[7].SetActive(false);
+
+                        gameObjects[9].GetComponent<AudioSource>().pitch = gameSpeed;
+                        gameObjects[9].GetComponent<AudioSource>().Play();
                     }
                     return;
                 }
@@ -838,6 +846,7 @@ public class MicrogameScript : MonoBehaviour
             case mcg.BCA:
                 bools = new bool[1];
                 bools[0] = true;
+                manager.dontKill = true;
                 break;
             case mcg.Stream:
                 floats = new float[2];
@@ -1075,6 +1084,8 @@ public class MicrogameScript : MonoBehaviour
 
                 gameObjects[20].SetActive(false);
 
+                gameObjects[12].SetActive(false);
+
                 break;
             case mcg.Boss1:
                 break;
@@ -1108,6 +1119,8 @@ public class MicrogameScript : MonoBehaviour
                         floats[4] = 0.75f;
                         transforms[0].GetComponentInChildren<Image>().color = Color.yellow;
                         gameObjects[7].SetActive(true);
+
+                        audioPlay(gameObjects[8].GetComponent<AudioSource>());
                     } // success
                     else
                     {
@@ -1173,6 +1186,9 @@ public class MicrogameScript : MonoBehaviour
                     // mark selector as correct / wrong (dependent on chosen option)
                     // highlight correct answer's text
 
+                    if (ints[0] == ints[1]) audioPlay(gameObjects[7].GetComponent<AudioSource>());
+                    else audioPlay(gameObjects[8].GetComponent<AudioSource>());
+
                     manager.lowerTimer(3);
                 }
                 break;
@@ -1183,6 +1199,9 @@ public class MicrogameScript : MonoBehaviour
                     bools[0] = mode;
 
                     gameObjects[5].SetActive(!mode);
+
+                    gameObjects[7].GetComponent<AudioSource>().pitch = gameSpeed + Random.Range(-0.2f, 0.2f); // must be
+                    gameObjects[7].GetComponent<AudioSource>().Play();
                 }
                 else if (inputName == "MouseMove" && bools[0])
                 {
@@ -1211,6 +1230,8 @@ public class MicrogameScript : MonoBehaviour
 
                         gameObjects[2].GetComponent<Image>().enabled = true;
                         gameObjects[3].GetComponent<Image>().enabled = true;
+
+                        audioPlay(gameObjects[6].GetComponent<AudioSource>());
 
                         floats[2] = 0.85f;
                     } // success
@@ -1280,6 +1301,8 @@ public class MicrogameScript : MonoBehaviour
                                 gameObjects[0].transform.GetChild(ints[1] + 2).gameObject.SetActive(true);
 
                                 floats[1] = 0.5f;
+
+                                audioPlay(gameObjects[7].GetComponent<AudioSource>());
                             }
                             else
                             {
@@ -1297,6 +1320,9 @@ public class MicrogameScript : MonoBehaviour
 
                                 gameObjects[2].transform.GetChild(0).gameObject.SetActive(false);
                                 gameObjects[2].transform.GetChild(1).gameObject.SetActive(true);
+
+                                audioPlay(gameObjects[7].GetComponent<AudioSource>());
+                                audioPlay(gameObjects[8].GetComponent<AudioSource>());
 
                                 break;
                             } // victory
@@ -1443,5 +1469,10 @@ public class MicrogameScript : MonoBehaviour
             Destroy(newBullets, 10);
             newBullets.SetActive(true);
         }
+    }
+    void audioPlay(AudioSource input)
+    {
+        input.pitch = gameSpeed;
+        input.Play();
     }
 }
