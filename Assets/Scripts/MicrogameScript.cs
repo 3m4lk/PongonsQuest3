@@ -2,7 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using static UnityEditor.PlayerSettings;
 
 public enum mcg
 {
@@ -600,7 +599,7 @@ public class MicrogameScript : MonoBehaviour
                 // float 8: Mt. Fuji scroll time
                 // float 9: intro Player hitbox wait time
                 // float 10: Terry appear time
-                // float 12: ending zoom duration
+                // float 12: ending zoom duration (in in phase 2, out in phase 3)
 
                 // bool 0: is alive
 
@@ -609,6 +608,9 @@ public class MicrogameScript : MonoBehaviour
                 // transform 2: bullet parent
                 // transform 3: Mt. Fuji bg
                 // transform 4: Terry
+                // transforms 5-6: bullet parent zoom ref points
+                // transform 7: power text thing but parent idgaf
+                // transform 8: charge ball
 
                 // GO 0: straight
                 // GO 1: curved
@@ -621,6 +623,16 @@ public class MicrogameScript : MonoBehaviour
                 // GO 12: power thingy
                 // GO 13: touhou item sound
                 // GO 14: boss timer
+                // GO 15: Pongon hurt sound
+                // GO 16: Shibbi hurt sound
+                // GO 17: death sound
+                // GO 18: outro spellcard animation
+                // GO 19: lazer
+                // GO 20: hint
+
+                // curve 0: Terry appear
+                // curve 1: Terry shake
+                // curve 2: zoom curve
 
 
                 // endurance / survival for 30 seconds
@@ -648,7 +660,25 @@ public class MicrogameScript : MonoBehaviour
 
                         floats[3] = Mathf.Max(floats[3] - deltaTime, 0f); // i-frames
 
-                        floats[2] = Mathf.Min(floats[2] + deltaTime, 40f);
+                        if (floats[3] != 0) transforms[0].GetComponent<Image>().enabled = !transforms[0].GetComponent<Image>().enabled;
+                        else transforms[0].GetComponent<Image>().enabled = true;
+
+                            floats[2] = Mathf.Min(floats[2] + deltaTime, 40f);
+
+                        string bossTime = gameObjects[14].GetComponent<TMP_Text>().text;
+                        gameObjects[14].GetComponent<TMP_Text>().text = Mathf.FloorToInt(40f - floats[2]) + "";
+
+                        if (gameObjects[14].GetComponent<TMP_Text>().text != bossTime)
+                        {
+                            //print("timeChange");
+                            bossTime = gameObjects[14].GetComponent<TMP_Text>().text;
+                            if (bossTime == "5" || bossTime == "4" || bossTime == "3" || bossTime == "2" || bossTime == "1" || bossTime == "0")
+                            {
+                                // play timer sound
+                                gameObjects[14].GetComponent<TMP_Text>().color = Color.yellow;
+                                gameObjects[14].GetComponent<AudioSource>().Play();
+                            }
+                        }
 
                         if (floats[2] != 40)
                         {
@@ -695,7 +725,7 @@ public class MicrogameScript : MonoBehaviour
                                 }
                             }
 
-                            transforms[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 128f);
+                            transforms[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 96f);
 
                             //print(transforms[0].GetComponent<Rigidbody2D>().position);
                         }
@@ -715,17 +745,22 @@ public class MicrogameScript : MonoBehaviour
                                 Destroy(allBullets[i]);
                             }
 
-                            gameObjects[11].GetComponent<TMP_Text>().text = "u prolly should PAYDAY 3: Delivery...        <size=0>;</size>\n<size=32><color=red>Charge! <size=0>;</size>\n</color></size>Heist DLC :)";
+                            gameObjects[11].GetComponent<TMP_Text>().text = "u prolly should PAYDAY 3: Delivery...        <size=0>;</size>\n<size=32><color=red>Charge! <size=0>;</size>\n</color></size>Heist DLC\n\n\n<color=yellow>(by <color=red>mashing <b><size=16>Spacebar</b></size></color> :)</color>";
+                            gameObjects[20].SetActive(true);
 
                             transforms[4].GetComponent<AudioSource>().Play();
 
                             floats[10] = 1f;
+
+                            floats[12] = 1f;
 
                             // move Player to default position
                             // zoom in on Player & show Terry  \(>v<)\.
                             // Terry is charging up a hyper beam, progressing with Player's Power
 
                             // do the transition
+
+                            gameObjects[14].SetActive(false);
                         }
                         break; // phase 1: evasion
                     case 1:
@@ -733,7 +768,7 @@ public class MicrogameScript : MonoBehaviour
 
                         for (int i = 0; i < allStars.Length; i++)
                         {
-                            if (i >= 32)
+                            if (i >= 48)
                             {
                                 Destroy(allStars[i]);
                                 continue;
@@ -749,18 +784,38 @@ public class MicrogameScript : MonoBehaviour
                             }
                         }
 
+                        floats[12] = Mathf.Max(floats[12] - deltaTime, 0f);
+                        transforms[2].position = Vector3.Lerp(transforms[5].position, transforms[6].position, curves[2].Evaluate(floats[12]));
+                        transforms[2].localScale = Vector3.Lerp(transforms[5].localScale, transforms[6].localScale, curves[2].Evaluate(floats[12]));
+
+
                         floats[10] = Mathf.Max(floats[10] - deltaTime, 0f);
                         Vector2 tPos = transforms[4].localPosition;
                         tPos.y = Mathf.Lerp(-124f, -284f, curves[0].Evaluate(floats[10]));
                         transforms[4].localPosition = tPos;
 
-                        transforms[4].GetChild(0).localPosition = new Vector2(Random.Range(-7f, 7f), Random.Range(-14, 0f)) * ((float)ints[2] / 128f);
+                        transforms[4].GetChild(0).localPosition = new Vector2(Random.Range(-7f, 7f), Random.Range(-14, 0f)) * curves[1].Evaluate((float)ints[2] / 96f);
+                        transforms[7].localPosition = new Vector2(-14f, -86f) + new Vector2(Random.Range(-5f, 5f), Random.Range(-5f, 5f)) * curves[1].Evaluate((float)ints[2] / 96f);
+
+                        transforms[8].GetComponent<RectTransform>().sizeDelta = new Vector2(Random.Range(64f, 96f), Random.Range(64f, 96f)) * curves[1].Evaluate((float)ints[2] / 96f);
+                        transforms[8].localRotation = Quaternion.Euler(0, 0, Random.Range(-360f, 360f));
+                        transforms[8].GetComponent<CanvasGroup>().alpha = curves[1].Evaluate((float)ints[2] / 96f) + Random.Range(-0.1f, 0.05f);
+
 
                         gameObjects[12].GetComponent<CanvasGroup>().alpha += deltaTime * 2.5f;
 
                         // hold power above a threshold for 6 seconds
                         // then win & do the shooting anim
                         break; // phase 2: charging
+                    case 2:
+                        floats[12] = Mathf.Max(floats[12] - deltaTime * 2f, 0f);
+                        transforms[2].position = Vector3.Lerp(transforms[6].position, transforms[5].position, curves[2].Evaluate(floats[12]));
+                        transforms[2].localScale = Vector3.Lerp(transforms[6].localScale, transforms[5].localScale, curves[2].Evaluate(floats[12]));
+
+                        gameObjects[19].transform.localPosition = new Vector2(Random.Range(-16f, 16f), -124f + Random.Range(-16f, 16f));
+                        gameObjects[19].transform.localRotation = Quaternion.Euler(0, 0, Random.Range(-7f, 7f));
+                        transforms[1].localRotation = Quaternion.Euler(0, 0, Random.Range(-360f, 360f));
+                        break; // stage 3: outro
                 }
 
                 break;
@@ -986,14 +1041,25 @@ public class MicrogameScript : MonoBehaviour
                     Destroy(allBullets[i]);
                 }
 
+                gameObjects[14].GetComponent<TMP_Text>().color = Color.white;
+                gameObjects[14].GetComponent<TMP_Text>().text = "40";
+
+                transforms[2].position = transforms[6].position;
+                transforms[2].localScale = transforms[6].localScale;
+
+                gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: 0/96";
+
                 gameObjects[10].GetComponent<CanvasGroup>().alpha = 1;
 
                 transforms[0].localPosition = new Vector2(0, -125);
                 transforms[0].gameObject.SetActive(true);
 
+                transforms[8].GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                transforms[8].GetComponent<CanvasGroup>().alpha = 0;
+
                 transforms[4].localPosition = new Vector2(0, -284f);
 
-                floats = new float[12];
+                floats = new float[13];
                 floats[9] = 3f;
 
                 ints = new int[3];
@@ -1006,6 +1072,8 @@ public class MicrogameScript : MonoBehaviour
 
                 bools = new bool[1];
                 bools[0] = true;
+
+                gameObjects[20].SetActive(false);
 
                 break;
             case mcg.Boss1:
@@ -1311,18 +1379,33 @@ public class MicrogameScript : MonoBehaviour
                 } // Dodge
                 else if (mode && inputName == "Space" && ints[1] == 1)
                 {
-                    if (ints[2] < 128)
+                    if (ints[2] < 96)
                     {
                         ints[2]++;
-                        gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: " + ints[2] + "/128";
+                        gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: " + ints[2] + "/96";
                         gameObjects[13].GetComponent<AudioSource>().Play();
-                        if (ints[2] == 128)
+                        if (ints[2] == 96)
                         {
-                            gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: FULL!/128";
+                            gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: FULL!/96";
                             print("Victory!");
                             gameObjects[11].GetComponent<TMP_Text>().text = "you definitely should                                <size=0>;</size>\n<size=32><color=red>Nitori Climb!   <size=0>;</size>\n</color></size>right no-wait what!?";
                             manager.toggleWin(true);
                             // run the cutscene
+
+                            floats[12] = 1f;
+                            ints[1] = 2; // stage 3: literally just outro anim lmao
+
+                            gameObjects[12].SetActive(false);
+                            gameObjects[18].SetActive(true);
+                            gameObjects[19].SetActive(true);
+
+                            gameObjects[20].SetActive(false);
+
+                            transforms[8].gameObject.SetActive(false);
+
+                            manager.wasBossDefeated = true;
+                            manager.microgameTimer = 5; // to add time in case Player is (somehow?) running out
+                            manager.lowerTimer(5);
                         } // Success!
                     }
                 } // Charge

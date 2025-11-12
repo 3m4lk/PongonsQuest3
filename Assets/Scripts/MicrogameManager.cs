@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public class microgame
@@ -73,6 +74,8 @@ public class MicrogameManager : MonoBehaviour
 {
     public int lifes;
 
+    public Animator bgAnimator;
+
     [Space]
     public int currentMicrogameIndex;
     [Tooltip("swap the Evil Polygon Donut microgame with this index (so this microgame is always at this index no matter what)")]
@@ -143,6 +146,13 @@ public class MicrogameManager : MonoBehaviour
 
     private bool wasBoss = false;
 
+    public float bossDefeatedCooldown;
+    public bool wasBossDefeated;
+
+    public GameObject[] lifeIcons, lifeRemoveIcons;
+
+    public float gameOverTime;
+
     private void Awake()
     {
         if (!devMode)
@@ -170,6 +180,29 @@ public class MicrogameManager : MonoBehaviour
         if (initialWait != 0)
         {
             initialWait = Mathf.Max(initialWait - deltaTime, 0f);
+            return;
+        }
+
+        if (gameOverTime != 0)
+        {
+            gameOverTime = Mathf.Max(gameOverTime - deltaTime, 0f);
+
+            if (gameOverTime == 0)
+            {
+                SceneManager.LoadScene(2); // restart
+            }
+            return;
+        }
+
+        if (bossDefeatedCooldown != 0)
+        {
+            bossDefeatedCooldown = Mathf.Max(bossDefeatedCooldown - deltaTime, 0f);
+            if (bossDefeatedCooldown == 0)
+            {
+                print("end!");
+                SceneManager.LoadScene(3);
+                // move to outro scene
+            }
             return;
         }
 
@@ -225,7 +258,13 @@ public class MicrogameManager : MonoBehaviour
 
             if (resultTimer == 0)
             {
-                if (currentMicrogameIndex == microgames.Length)
+                // if boss defeated
+                if (wasBossDefeated)
+                {
+                    bossDefeatedCooldown = 6f;
+                    return;
+                }
+                else if (currentMicrogameIndex == microgames.Length)
                 {
                     if (!wasBoss)
                     {
@@ -234,6 +273,7 @@ public class MicrogameManager : MonoBehaviour
                         bossTimer = 3f;
                         bpmSpeed = 10;
                         gameSpeed = 1;
+                        bgAnimator.speed = 1;
                     }
                     return;
                 } // Boss
@@ -247,6 +287,8 @@ public class MicrogameManager : MonoBehaviour
                             speedUpTimer = 3f;
                             bpmSpeed += 1f;
                             gameSpeed = bpmSpeed / 12f;
+
+                            bgAnimator.speed = gameSpeed;
                             return;
                         }
                     }
@@ -298,7 +340,11 @@ public class MicrogameManager : MonoBehaviour
                 lastTAP = transAnimProgress;
                 //print("ENDED!");
 
-                if (currentMg.ownGO) currentMg.ownGO.GetComponent<MicrogameScript>().startMG();
+                if (currentMg.ownGO)
+                {
+                    if (currentMg.ownGO.GetComponent<AudioSource>()) currentMg.ownGO.GetComponent<AudioSource>().Play();
+                    currentMg.ownGO.GetComponent<MicrogameScript>().startMG();
+                }
                 bgTransform.gameObject.SetActive(false);
                 gameName.enabled = false;
             }
@@ -330,6 +376,7 @@ public class MicrogameManager : MonoBehaviour
             if (microgameTimer == 0f)
             {
                 if (currentMg.ownGO.GetComponent<MicrogameScript>().microgameType == mcg.Chase) currentMg.ownGO.GetComponent<MicrogameScript>().transforms[0].parent.gameObject.SetActive(false);
+                if (currentMg.ownGO.GetComponent<AudioSource>()) currentMg.ownGO.GetComponent<AudioSource>().Stop();
 
                 print("boot back to main scene!");
                 if (currentMicrogameIndex < microgames.Length) currentMicrogameIndex++; // stage will move up unless Player is at the Boss Stage
@@ -341,6 +388,17 @@ public class MicrogameManager : MonoBehaviour
                 if (winState) resVisChange(1);
                 else resVisChange(2);
                 // do vis based on win status
+
+                lifes--;
+                lifeIcons[lifes].SetActive(false);
+                lifeRemoveIcons[lifes].SetActive(true);
+                if (lifes == 0)
+                {
+                    print("YOU DIED!");
+                    gameOverTime = 6f;
+                    //gameObject.SetActive(false); // for now...
+                    return; // kinda pointless but whatever
+                }
             }
         }
     }

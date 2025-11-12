@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AnimationFunctions : MonoBehaviour
 {
@@ -101,14 +102,21 @@ public class AnimationFunctions : MonoBehaviour
                     objects[0].GetComponent<MicrogameScript>().getManager().lowerTimer(3);
 
                     objects[0].GetComponent<MicrogameScript>().gameObjects[11].GetComponent<TMP_Text>().text = "erm. what the                                <size=0>;</size>\n<size=32><color=red>HYPER DEMON! <size=0>;</size>\n</color></size>??????";
+
+                    objects[0].GetComponent<MicrogameScript>().gameObjects[17].GetComponent<AudioSource>().Play();
                     gameObject.SetActive(false);
-                } // failure
+                } // failure (dead)
                 else
                 {
+                    objects[0].GetComponent<MicrogameScript>().gameObjects[15 + Random.Range(0, 2)].GetComponent<AudioSource>().Play();
                     objects[0].GetComponent<MicrogameScript>().floats[3] = 1f;
                     if (collision.name != "boss") Destroy(collision.gameObject);
-                }
+                } // just hurt
             }
         }
+    }
+    public void moveScenes(int index)
+    {
+        SceneManager.LoadScene(index);
     }
 }
