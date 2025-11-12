@@ -587,17 +587,27 @@ public class MicrogameScript : MonoBehaviour
 
                 // int 0: health
                 // int 1: boss phase (0: survival; 1: charging (mash space))
+                // int 2: power (mashing spacebar)
 
                 // floats 0-1: Player movement vector
                 // float 2: boss duration (till Charge!)
                 // float 3: i-frames
+                // float 4: cooldown straight
+                // float 5: cooldown curved
+                // float 6: cooldown giant
+                // float 7: cooldown flaker
 
                 // bool 0: is alive
 
                 // transform 0: Player
                 // transform 1: Boss (Stan Luciferin)
+                // transform 2: bullet parent
 
-                // GO 0: 
+                // GO 0: straight
+                // GO 1: curved
+                // GO 2: giant
+                // GO 3: flaker
+                // GO 4: star item
 
 
                 // endurance / survival for 30 seconds
@@ -611,13 +621,110 @@ public class MicrogameScript : MonoBehaviour
                 // 12: giants (first single then triple)
                 // 20: spawners (first slow, then those shooting little shits)
 
-                floats[3] = Mathf.Max(floats[3] - deltaTime, 0f);
+                if (ints[1] == 0)
+                {
+                    if (!bools[0]) break;
 
-                transforms[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 128f);
+                    floats[3] = Mathf.Max(floats[3] - deltaTime, 0f); // i-frames
 
-                //print(transforms[0].GetComponent<Rigidbody2D>().position);
+                    floats[2] = Mathf.Min(floats[2] + deltaTime, 40f);
 
-                if (!bools[0]) break;
+                    if (floats[2] != 40)
+                    {
+                        float shootSpeed = Mathf.Lerp(0.8f, 0.5f, floats[2] / 40f);
+                        int quantity = Mathf.FloorToInt(Mathf.Lerp(1, 8, floats[2] / 35f));
+                        GameObject bullet = gameObjects[0];
+
+                        for (floats[4] -= deltaTime; floats[4] <= 0f; floats[4] += shootSpeed)
+                        {
+                            spawnBullet(bullet, quantity);
+                        }
+
+                        if (floats[2] >= 5f)
+                        {
+                            shootSpeed = Mathf.Lerp(0.8f, 0.5f, floats[2] / 40f);
+                            quantity = Mathf.FloorToInt(Mathf.Lerp(1, 3, floats[2] / 35f));
+                            bullet = gameObjects[1];
+
+                            for (floats[5] -= deltaTime; floats[5] <= 0f; floats[5] += shootSpeed)
+                            {
+                                spawnBullet(bullet, quantity);
+                            }
+                        }
+                        if (floats[2] >= 12f)
+                        {
+                            shootSpeed = Mathf.Lerp(3f, 2.5f, floats[2] / 40f);
+                            quantity = Mathf.FloorToInt(Mathf.Lerp(1, 3, floats[2] / 35f));
+                            bullet = gameObjects[2];
+
+                            for (floats[6] -= deltaTime; floats[6] <= 0f; floats[6] += shootSpeed)
+                            {
+                                spawnBullet(bullet, quantity);
+                            }
+                        }
+                        if (floats[2] >= 20f)
+                        {
+                            shootSpeed = Mathf.Lerp(2f, 1f, floats[2] / 40f);
+                            quantity = Mathf.FloorToInt(Mathf.Lerp(1, 2, floats[2] / 35f));
+                            bullet = gameObjects[3];
+
+                            for (floats[6] -= deltaTime; floats[6] <= 0f; floats[6] += shootSpeed)
+                            {
+                                spawnBullet(bullet, quantity);
+                            }
+                        }
+
+                        transforms[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 128f);
+
+                        //print(transforms[0].GetComponent<Rigidbody2D>().position);
+                    }
+                    else
+                    {
+                        ints[1] = 1;
+
+                        transforms[0].localPosition = new Vector2(0, -125);
+
+                        GameObject[] allBullets = GameObject.FindGameObjectsWithTag("TouhouBullet");
+
+                        for (int i = 0; i < allBullets.Length; i++)
+                        {
+                            // place a point item in that bullet's spot
+                            GameObject star = Instantiate(gameObjects[4], allBullets[i].transform.position, Quaternion.identity);
+                            star.transform.parent = transforms[2];
+                            Destroy(allBullets[i]);
+                        }
+
+                        // move all point items towards Player, remove when close enough and add +1 to Player's power from it (capped at 24)
+
+                        // move Player to default position
+                        // zoom in on Player & show Terry  \(>v<)\.
+                        // Terry is charging up a hyper beam, progressing with Player's Power
+
+                        // do the transition
+                    }
+                } // phase 1: evasion
+                else
+                {
+                    GameObject[] allStars = GameObject.FindGameObjectsWithTag("TouhouStar");
+
+                    for (int i = 0; i < allStars.Length; i++)
+                    {
+                        if (i >= 24)
+                        {
+                            Destroy(allStars[i]);
+                            continue;
+                        }
+                        allStars[i].transform.position += Vector3.ClampMagnitude(transforms[0].position - allStars[i].transform.position, 896f * deltaTime);
+                        if (Vector3.Distance(transforms[0].position, allStars[i].transform.position) <= 3f && ints[2] < 98)
+                        {
+                            ints[2]++;
+                            Destroy(allStars[i]);
+                        }
+                    }
+
+
+
+                } // phase 2: charging
 
                 break;
         }
@@ -834,9 +941,9 @@ public class MicrogameScript : MonoBehaviour
                 break;
             case mcg.Boss0:
 
-                floats = new float[4];
+                floats = new float[8];
 
-                ints = new int[1];
+                ints = new int[3];
                 ints[0] = 5;
 
                 bools = new bool[1];
@@ -1135,14 +1242,24 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Boss0:
-                if (inputName == "Movement")
+                if (inputName == "Movement" && ints[1] == 0)
                 {
                     floats[0] = 0;
                     floats[1] = 0;
 
                     if (obj.action.ReadValue<Vector2>().x != 0) floats[0] = Mathf.Sign(obj.action.ReadValue<Vector2>().x);
                     if (obj.action.ReadValue<Vector2>().y != 0) floats[1] = Mathf.Sign(obj.action.ReadValue<Vector2>().y);
-                }
+
+                } // Dodge
+                else if (inputName == "Space" && ints[1] == 1 && mode)
+                {
+                    ints[2]++;
+                    if (ints[2] == 100)
+                    {
+                        manager.toggleWin(true);
+                        // run the cutscene
+                    } // Success!
+                } // Charge
                 break;
         }
     }
@@ -1163,5 +1280,19 @@ public class MicrogameScript : MonoBehaviour
     public MicrogameManager getManager()
     {
         return manager;
+    }
+    void spawnBullet(GameObject input, int quantity)
+    {
+        print(quantity);
+        float randomAngle = Random.Range(-360f, 360f);
+        for (int i = 0; i < quantity; i++)
+        {
+            GameObject newBullets = Instantiate(input, transforms[1].position, transforms[1].rotation);
+            newBullets.transform.parent = transforms[2];
+            newBullets.transform.localRotation = Quaternion.Euler(0, 0, randomAngle + Mathf.Lerp(0f, 360f, (float)i / (float)quantity));
+            newBullets.transform.SetAsLastSibling();
+            Destroy(newBullets, 10);
+            newBullets.SetActive(true);
+        }
     }
 }

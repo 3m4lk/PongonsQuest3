@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6338271422588386534}
   m_Layer: 3
   m_Name: bulletStraight
-  m_TagString: Untagged
+  m_TagString: TouhouBullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -127,7 +127,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TouhouBullet
   isCurved: 0
   isSpawner: 0
-  speed: 96
+  speed: 128
   turningSpeed: 0
   spawningSpeed: 0
+  spawnQuantity: 0
   bulletPreset: {fileID: 0}
