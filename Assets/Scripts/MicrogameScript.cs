@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using static UnityEditor.PlayerSettings;
 
 public enum mcg
 {
@@ -596,18 +597,30 @@ public class MicrogameScript : MonoBehaviour
                 // float 5: cooldown curved
                 // float 6: cooldown giant
                 // float 7: cooldown flaker
+                // float 8: Mt. Fuji scroll time
+                // float 9: intro Player hitbox wait time
+                // float 10: Terry appear time
+                // float 12: ending zoom duration
 
                 // bool 0: is alive
 
                 // transform 0: Player
                 // transform 1: Boss (Stan Luciferin)
                 // transform 2: bullet parent
+                // transform 3: Mt. Fuji bg
+                // transform 4: Terry
 
                 // GO 0: straight
                 // GO 1: curved
                 // GO 2: giant
                 // GO 3: flaker
                 // GO 4: star item
+                // GOs 5-9: health icons
+                // GO 10: intro Player hitbox
+                // GO 11: boss status text
+                // GO 12: power thingy
+                // GO 13: touhou item sound
+                // GO 14: boss timer
 
 
                 // endurance / survival for 30 seconds
@@ -621,110 +634,134 @@ public class MicrogameScript : MonoBehaviour
                 // 12: giants (first single then triple)
                 // 20: spawners (first slow, then those shooting little shits)
 
-                if (ints[1] == 0)
+                floats[8] = Mathf.Min(floats[8] + deltaTime, 56f);
+
+                transforms[3].localPosition = Vector3.up * Mathf.Lerp(45f, -45f, floats[8] / 56f);
+
+                floats[9] = Mathf.Max(floats[9] - deltaTime, 0f);
+                if (floats[9] == 0) gameObjects[10].GetComponent<CanvasGroup>().alpha -= deltaTime;
+
+                switch (ints[1])
                 {
-                    if (!bools[0]) break;
+                    case 0:
+                        if (!bools[0]) break;
 
-                    floats[3] = Mathf.Max(floats[3] - deltaTime, 0f); // i-frames
+                        floats[3] = Mathf.Max(floats[3] - deltaTime, 0f); // i-frames
 
-                    floats[2] = Mathf.Min(floats[2] + deltaTime, 40f);
+                        floats[2] = Mathf.Min(floats[2] + deltaTime, 40f);
 
-                    if (floats[2] != 40)
-                    {
-                        float shootSpeed = Mathf.Lerp(0.8f, 0.5f, floats[2] / 40f);
-                        int quantity = Mathf.FloorToInt(Mathf.Lerp(1, 8, floats[2] / 35f));
-                        GameObject bullet = gameObjects[0];
-
-                        for (floats[4] -= deltaTime; floats[4] <= 0f; floats[4] += shootSpeed)
+                        if (floats[2] != 40)
                         {
-                            spawnBullet(bullet, quantity);
-                        }
+                            float shootSpeed = Mathf.Lerp(0.8f, 0.5f, floats[2] / 40f);
+                            int quantity = Mathf.FloorToInt(Mathf.Lerp(1, 8, floats[2] / 35f));
+                            GameObject bullet = gameObjects[0];
 
-                        if (floats[2] >= 5f)
-                        {
-                            shootSpeed = Mathf.Lerp(0.8f, 0.5f, floats[2] / 40f);
-                            quantity = Mathf.FloorToInt(Mathf.Lerp(1, 3, floats[2] / 35f));
-                            bullet = gameObjects[1];
-
-                            for (floats[5] -= deltaTime; floats[5] <= 0f; floats[5] += shootSpeed)
+                            for (floats[4] -= deltaTime; floats[4] <= 0f; floats[4] += shootSpeed)
                             {
                                 spawnBullet(bullet, quantity);
                             }
-                        }
-                        if (floats[2] >= 12f)
-                        {
-                            shootSpeed = Mathf.Lerp(3f, 2.5f, floats[2] / 40f);
-                            quantity = Mathf.FloorToInt(Mathf.Lerp(1, 3, floats[2] / 35f));
-                            bullet = gameObjects[2];
 
-                            for (floats[6] -= deltaTime; floats[6] <= 0f; floats[6] += shootSpeed)
+                            if (floats[2] >= 5f)
                             {
-                                spawnBullet(bullet, quantity);
+                                shootSpeed = Mathf.Lerp(0.8f, 0.5f, floats[2] / 40f);
+                                quantity = Mathf.FloorToInt(Mathf.Lerp(1, 3, floats[2] / 35f));
+                                bullet = gameObjects[1];
+
+                                for (floats[5] -= deltaTime; floats[5] <= 0f; floats[5] += shootSpeed)
+                                {
+                                    spawnBullet(bullet, quantity);
+                                }
+                            }
+                            if (floats[2] >= 12f)
+                            {
+                                shootSpeed = Mathf.Lerp(3f, 2.5f, floats[2] / 40f);
+                                quantity = Mathf.FloorToInt(Mathf.Lerp(1, 3, floats[2] / 35f));
+                                bullet = gameObjects[2];
+
+                                for (floats[6] -= deltaTime; floats[6] <= 0f; floats[6] += shootSpeed)
+                                {
+                                    spawnBullet(bullet, quantity);
+                                }
+                            }
+                            if (floats[2] >= 20f)
+                            {
+                                shootSpeed = Mathf.Lerp(2f, 1f, floats[2] / 40f);
+                                quantity = Mathf.FloorToInt(Mathf.Lerp(1, 2, floats[2] / 35f));
+                                bullet = gameObjects[3];
+
+                                for (floats[6] -= deltaTime; floats[6] <= 0f; floats[6] += shootSpeed)
+                                {
+                                    spawnBullet(bullet, quantity);
+                                }
+                            }
+
+                            transforms[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 128f);
+
+                            //print(transforms[0].GetComponent<Rigidbody2D>().position);
+                        }
+                        else
+                        {
+                            ints[1] = 1;
+
+                            transforms[0].localPosition = new Vector2(0, -125);
+
+                            GameObject[] allBullets = GameObject.FindGameObjectsWithTag("TouhouBullet");
+
+                            for (int i = 0; i < allBullets.Length; i++)
+                            {
+                                // place a point item in that bullet's spot
+                                GameObject star = Instantiate(gameObjects[4], allBullets[i].transform.position, Quaternion.identity);
+                                star.transform.parent = transforms[2];
+                                Destroy(allBullets[i]);
+                            }
+
+                            gameObjects[11].GetComponent<TMP_Text>().text = "u prolly should PAYDAY 3: Delivery...        <size=0>;</size>\n<size=32><color=red>Charge! <size=0>;</size>\n</color></size>Heist DLC :)";
+
+                            transforms[4].GetComponent<AudioSource>().Play();
+
+                            floats[10] = 1f;
+
+                            // move Player to default position
+                            // zoom in on Player & show Terry  \(>v<)\.
+                            // Terry is charging up a hyper beam, progressing with Player's Power
+
+                            // do the transition
+                        }
+                        break; // phase 1: evasion
+                    case 1:
+                        GameObject[] allStars = GameObject.FindGameObjectsWithTag("TouhouStar");
+
+                        for (int i = 0; i < allStars.Length; i++)
+                        {
+                            if (i >= 32)
+                            {
+                                Destroy(allStars[i]);
+                                continue;
+                            }
+                            allStars[i].transform.position += Vector3.ClampMagnitude(transforms[0].position - allStars[i].transform.position, 896f * deltaTime);
+                            if (Vector3.Distance(transforms[0].position, allStars[i].transform.position) <= 3f && ints[2] < 48)
+                            {
+                                ints[2]++;
+                                Destroy(allStars[i]);
+                                gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: " + ints[2] + "/128";
+                                gameObjects[13].GetComponent<AudioSource>().Play();
+                                // play item acquisition sound
                             }
                         }
-                        if (floats[2] >= 20f)
-                        {
-                            shootSpeed = Mathf.Lerp(2f, 1f, floats[2] / 40f);
-                            quantity = Mathf.FloorToInt(Mathf.Lerp(1, 2, floats[2] / 35f));
-                            bullet = gameObjects[3];
 
-                            for (floats[6] -= deltaTime; floats[6] <= 0f; floats[6] += shootSpeed)
-                            {
-                                spawnBullet(bullet, quantity);
-                            }
-                        }
+                        floats[10] = Mathf.Max(floats[10] - deltaTime, 0f);
+                        Vector2 tPos = transforms[4].localPosition;
+                        tPos.y = Mathf.Lerp(-124f, -284f, curves[0].Evaluate(floats[10]));
+                        transforms[4].localPosition = tPos;
 
-                        transforms[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 128f);
+                        transforms[4].GetChild(0).localPosition = new Vector2(Random.Range(-7f, 7f), Random.Range(-14, 0f)) * ((float)ints[2] / 128f);
 
-                        //print(transforms[0].GetComponent<Rigidbody2D>().position);
-                    }
-                    else
-                    {
-                        ints[1] = 1;
+                        gameObjects[12].GetComponent<CanvasGroup>().alpha += deltaTime * 2.5f;
 
-                        transforms[0].localPosition = new Vector2(0, -125);
-
-                        GameObject[] allBullets = GameObject.FindGameObjectsWithTag("TouhouBullet");
-
-                        for (int i = 0; i < allBullets.Length; i++)
-                        {
-                            // place a point item in that bullet's spot
-                            GameObject star = Instantiate(gameObjects[4], allBullets[i].transform.position, Quaternion.identity);
-                            star.transform.parent = transforms[2];
-                            Destroy(allBullets[i]);
-                        }
-
-                        // move all point items towards Player, remove when close enough and add +1 to Player's power from it (capped at 24)
-
-                        // move Player to default position
-                        // zoom in on Player & show Terry  \(>v<)\.
-                        // Terry is charging up a hyper beam, progressing with Player's Power
-
-                        // do the transition
-                    }
-                } // phase 1: evasion
-                else
-                {
-                    GameObject[] allStars = GameObject.FindGameObjectsWithTag("TouhouStar");
-
-                    for (int i = 0; i < allStars.Length; i++)
-                    {
-                        if (i >= 24)
-                        {
-                            Destroy(allStars[i]);
-                            continue;
-                        }
-                        allStars[i].transform.position += Vector3.ClampMagnitude(transforms[0].position - allStars[i].transform.position, 896f * deltaTime);
-                        if (Vector3.Distance(transforms[0].position, allStars[i].transform.position) <= 3f && ints[2] < 48)
-                        {
-                            ints[2]++;
-                            Destroy(allStars[i]);
-                        }
-                    }
-
-
-
-                } // phase 2: charging
+                        // hold power above a threshold for 6 seconds
+                        // then win & do the shooting anim
+                        break; // phase 2: charging
+                }
 
                 break;
         }
@@ -941,10 +978,31 @@ public class MicrogameScript : MonoBehaviour
                 break;
             case mcg.Boss0:
 
-                floats = new float[8];
+                gameObjects[11].GetComponent<TMP_Text>().text = "you probably should metal gear...             <size=0>;\r\n<size=32><color=red>Survive!";
+
+                GameObject[] allBullets = GameObject.FindGameObjectsWithTag("TouhouBullet");
+                for (int i = 0; i < allBullets.Length; i++)
+                {
+                    Destroy(allBullets[i]);
+                }
+
+                gameObjects[10].GetComponent<CanvasGroup>().alpha = 1;
+
+                transforms[0].localPosition = new Vector2(0, -125);
+                transforms[0].gameObject.SetActive(true);
+
+                transforms[4].localPosition = new Vector2(0, -284f);
+
+                floats = new float[12];
+                floats[9] = 3f;
 
                 ints = new int[3];
                 ints[0] = 5;
+
+                for (int i = 0; i < 5; i++)
+                {
+                    gameObjects[5 + i].SetActive(true);
+                }
 
                 bools = new bool[1];
                 bools[0] = true;
@@ -1251,15 +1309,22 @@ public class MicrogameScript : MonoBehaviour
                     if (obj.action.ReadValue<Vector2>().y != 0) floats[1] = Mathf.Sign(obj.action.ReadValue<Vector2>().y);
 
                 } // Dodge
-                else if (inputName == "Space" && ints[1] == 1 && mode)
+                else if (mode && inputName == "Space" && ints[1] == 1)
                 {
-                    ints[2]++;
-                    if (ints[2] == 50)
+                    if (ints[2] < 128)
                     {
-                        print("Victory!");
-                        manager.toggleWin(true);
-                        // run the cutscene
-                    } // Success!
+                        ints[2]++;
+                        gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: " + ints[2] + "/128";
+                        gameObjects[13].GetComponent<AudioSource>().Play();
+                        if (ints[2] == 128)
+                        {
+                            gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: FULL!/128";
+                            print("Victory!");
+                            gameObjects[11].GetComponent<TMP_Text>().text = "you definitely should                                <size=0>;</size>\n<size=32><color=red>Nitori Climb!   <size=0>;</size>\n</color></size>right no-wait what!?";
+                            manager.toggleWin(true);
+                            // run the cutscene
+                        } // Success!
+                    }
                 } // Charge
                 break;
         }
@@ -1284,7 +1349,7 @@ public class MicrogameScript : MonoBehaviour
     }
     void spawnBullet(GameObject input, int quantity)
     {
-        print(quantity);
+        //print(quantity);
         float randomAngle = Random.Range(-360f, 360f);
         for (int i = 0; i < quantity; i++)
         {

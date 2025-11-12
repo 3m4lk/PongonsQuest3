@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 public class AnimationFunctions : MonoBehaviour
@@ -86,11 +87,20 @@ public class AnimationFunctions : MonoBehaviour
             {
                 print("harmed");
                 objects[0].GetComponent<MicrogameScript>().ints[0]--;
+
+                for (int i = 0; i < 5; i++)
+                {
+                    objects[0].GetComponent<MicrogameScript>().gameObjects[5 + i].SetActive(i < objects[0].GetComponent<MicrogameScript>().ints[0]);
+                }
+
                 if (objects[0].GetComponent<MicrogameScript>().ints[0] <= 0)
                 {
                     print("died!");
+                    objects[0].GetComponent<MicrogameScript>().bools[0] = false;
                     objects[0].GetComponent<MicrogameScript>().getManager().toggleWin(false);
                     objects[0].GetComponent<MicrogameScript>().getManager().lowerTimer(3);
+
+                    objects[0].GetComponent<MicrogameScript>().gameObjects[11].GetComponent<TMP_Text>().text = "erm. what the                                <size=0>;</size>\n<size=32><color=red>HYPER DEMON! <size=0>;</size>\n</color></size>??????";
                     gameObject.SetActive(false);
                 } // failure
                 else

@@ -14,7 +14,7 @@ public class TouhouBullet : MonoBehaviour
         if (transform.parent.name != "gameArea")
         {
             transform.SetParent(transform.parent.parent);
-            transform.SetAsFirstSibling();
+            transform.SetAsLastSibling();
         }
     }
     private void FixedUpdate()
