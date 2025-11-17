@@ -1,8 +1,9 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.Windows;
 
 [System.Serializable]
 public class microgame
@@ -151,7 +152,7 @@ public class MicrogameManager : MonoBehaviour
     public float bossDefeatedCooldown;
     public bool wasBossDefeated;
 
-    public GameObject[] lifeIcons, lifeRemoveIcons;
+    public GameObject[] lifeIcons;
 
     public float gameOverTime;
 
@@ -197,7 +198,7 @@ public class MicrogameManager : MonoBehaviour
 
             if (gameOverTime == 0)
             {
-                SceneManager.LoadScene(2); // restart
+                SceneManager.LoadScene(1); // restart
             }
             return;
         }
@@ -208,7 +209,7 @@ public class MicrogameManager : MonoBehaviour
             if (bossDefeatedCooldown == 0)
             {
                 print("end!");
-                SceneManager.LoadScene(3);
+                SceneManager.LoadScene(2);
                 // move to outro scene
             }
             return;
@@ -262,6 +263,7 @@ public class MicrogameManager : MonoBehaviour
             {
                 controlsTimer = 2.5f;
                 mainMus.mute = false;
+                mainMus.volume = 0.5f;
             }
 
             return;
@@ -282,7 +284,7 @@ public class MicrogameManager : MonoBehaviour
                 // if boss defeated
                 if (wasBossDefeated)
                 {
-                    bossDefeatedCooldown = 6f;
+                    bossDefeatedCooldown = 3f;
                     return;
                 }
                 else if (lifes == 0)
@@ -291,6 +293,7 @@ public class MicrogameManager : MonoBehaviour
                     bpmSpeed = 1;
                     gameSpeed = 1;
                     updateAnimSpeeds(0.05f);
+                    mainMus.pitch = 0.5f;
                     resVisChange(2);
                 }
                 else if (currentMicrogameIndex == microgames.Length)
@@ -299,7 +302,7 @@ public class MicrogameManager : MonoBehaviour
                     {
                         wasBoss = true;
                         print("BOSS");
-                        bossTimer = 3f;
+                        bossTimer = 4f;
                         bpmSpeed = 10;
                         gameSpeed = 1;
 
@@ -325,6 +328,7 @@ public class MicrogameManager : MonoBehaviour
                             //mainMus.mute = true;
 
                             updateAnimSpeeds(gameSpeed);
+                            mainMus.volume = 0.25f;
                             speedSound.Play();
                             return;
                         }
@@ -439,8 +443,7 @@ public class MicrogameManager : MonoBehaviour
                     {
 
                         lifes--;
-                        lifeIcons[lifes].SetActive(false);
-                        lifeRemoveIcons[lifes].SetActive(true);
+                        lifeIcons[lifes].GetComponent<Animator>().enabled = true;
                         if (lifes == 0)
                         {
                             print("YOU DIED!");
@@ -609,9 +612,10 @@ public class MicrogameManager : MonoBehaviour
         speedSound.pitch = input;
         mainMus.pitch = input;
 
-        for (int i = 0; i < lifeRemoveIcons.Length; i++)
+        for (int i = 0; i < lifeIcons.Length; i++)
         {
-            lifeRemoveIcons[i].GetComponent<Animator>().speed = input;
+            lifeIcons[i].GetComponent<Animator>().speed = input;
+            lifeIcons[i].GetComponent<AudioSource>().pitch = input;
         }
     }
 }

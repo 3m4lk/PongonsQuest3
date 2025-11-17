@@ -1,5 +1,4 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,11 +10,16 @@ public class AnimationFunctions : MonoBehaviour
     private bool applyVelo;
     private float changeDire = 1f, gameSpeed;
 
-    public bool isTouhou;
+    public bool isTouhou, doDate, iaMainMenuStuff;
     private void Awake()
     {
-        gameSpeed = GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>().gameSpeed;
-        if (GetComponent<Animator>()) GetComponent<Animator>().speed = gameSpeed;
+        if (!iaMainMenuStuff)
+        {
+            gameSpeed = GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>().gameSpeed;
+            if (GetComponent<Animator>()) GetComponent<Animator>().speed = gameSpeed;
+        }
+
+        if (doDate) objects[0].GetComponent<TMP_Text>().text = System.DateTime.Now.Day + "/" + System.DateTime.Now.Month + "/" + System.DateTime.Now.Year;
     }
     public void disableObject(int index)
     {
@@ -123,5 +127,9 @@ public class AnimationFunctions : MonoBehaviour
     public void deacSelf()
     {
         gameObject.SetActive(false);
+    }
+    public void playSound(int index)
+    {
+        objects[index].GetComponent<AudioSource>().Play();
     }
 }

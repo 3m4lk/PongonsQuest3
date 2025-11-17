@@ -72,8 +72,8 @@ public class MicrogameScript : MonoBehaviour
                 // gameObject 6: parry fail;
                 // GO 7: ...?
                 // GO 8: parry sound
-                // GO 8: explosion sound
-                // GO 8: fail sound
+                // GO 9: explosion sound
+                // GO 10: fail sound
 
                 if (floats[4] != 0)
                 {
@@ -180,6 +180,15 @@ public class MicrogameScript : MonoBehaviour
                 // GO 9: choice Pongon Shibbi
                 // GO 10: choice buttons collective
                 // GO 10: choice mask
+                // GO 11: (choice mask apparently... something got fucked up?)
+
+                // GO 12: choice sound
+                // GO 13: success sound
+                // GO 14: failure sound
+                // GO 15: choice switch sound
+                // GO 16: greenscreen toggle sound (played twice on both background switches)
+                // GO 17: success music
+                // GO 18: failure music
 
                 if (floats[1] != 0)
                 {
@@ -200,8 +209,20 @@ public class MicrogameScript : MonoBehaviour
 
                             gameObjects[7].SetActive(true);
                             gameObjects[8].SetActive(true);
+
+                            gameObjects[13].GetComponent<AudioSource>().Play();
+
+                            GetComponent<AudioSource>().Stop();
+                            gameObjects[17].GetComponent<AudioSource>().Play();
                         }
-                        else gameObjects[6].SetActive(true);
+                        else
+                        {
+                            gameObjects[14].GetComponent<AudioSource>().Play();
+                            gameObjects[6].SetActive(true);
+
+                            GetComponent<AudioSource>().Stop();
+                            gameObjects[18].GetComponent<AudioSource>().Play();
+                        }
 
                     }
                     return;
@@ -209,7 +230,7 @@ public class MicrogameScript : MonoBehaviour
 
                 if (bools[0]) return;
 
-                floats[0] = Mathf.Repeat(floats[0] + deltaTime * 3f, 5f);
+                floats[0] = Mathf.Repeat(floats[0] + deltaTime * 5f, 5f);
 
                 Vector3 pos = transforms[0].position;
                 pos.y = Mathf.Lerp(transforms[1].position.y, transforms[2].position.y, floats[0] * 0.2f);
@@ -221,6 +242,8 @@ public class MicrogameScript : MonoBehaviour
                     // deselect all other buttons
                     // select current button
                     // play sound
+
+                    gameObjects[15].GetComponent<AudioSource>().Play();
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -247,6 +270,7 @@ public class MicrogameScript : MonoBehaviour
                 // GO 4: quiz name
                 // GO 5: win sprite
                 // GO 6: failure sprite
+                // GO 9: choice switch sound
 
                 if (bools[2])
                 {
@@ -464,6 +488,10 @@ public class MicrogameScript : MonoBehaviour
                 // GO 3: Pongon victory
                 // GO 4: arrow interior (regular arrow, 1 is technically the outline)
                 // GO 5: explosion
+
+                // GO 9: crowd behind
+                // GO 10: crowd behind
+                // GO 11: crowd cheering sound (success)
 
                 // idle: (freeball it)
                 // up: Wriggle T
@@ -847,8 +875,18 @@ public class MicrogameScript : MonoBehaviour
                 bools = new bool[1];
                 bools[0] = true;
                 manager.dontKill = true;
+                gameObjects[0].GetComponent<AudioSource>().Play();
                 break;
             case mcg.Stream:
+
+                gameObjects[12].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[13].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[14].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[15].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[16].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[17].GetComponent<AudioSource>().pitch = gameSpeed;
+                gameObjects[18].GetComponent<AudioSource>().pitch = gameSpeed;
+
                 floats = new float[2];
                 floats[0] = (int)(Random.Range(0f, 4f));
                 floats[1] = 0;
@@ -878,6 +916,8 @@ public class MicrogameScript : MonoBehaviour
                     }
                 }
                 gameObjects[5].SetActive(true);
+
+                gameObjects[15].GetComponent<AudioSource>().Play();
 
                 break;
             case mcg.Quiz:
@@ -925,7 +965,8 @@ public class MicrogameScript : MonoBehaviour
                         {
                             if (finalAnswers[i] == normalAnswers[a])
                             {
-                                finalAnswers[i] = wrongAnswers[a];
+                                if (Random.Range(0, 16) == 3) finalAnswers[i] = "<size=20>Thermonuclear Reactor";
+                                else finalAnswers[i] = wrongAnswers[a];
                                 break;
                             }
                         }
@@ -941,6 +982,8 @@ public class MicrogameScript : MonoBehaviour
 
                     gameObjects[i].GetComponentInChildren<TMP_Text>().text = finalAnswers[i];
                 }
+
+                gameObjects[9].GetComponent<AudioSource>().pitch = gameSpeed;
                 break;
             case mcg.Shake:
                 bools = new bool[2];
@@ -978,7 +1021,9 @@ public class MicrogameScript : MonoBehaviour
                 bools = new bool[2];
 
                 gameObjects[0].GetComponent<AudioSource>().pitch = gameSpeed;
-                gameObjects[0].GetComponent<AudioSource>().Play();
+                gameObjects[0].GetComponent<AudioSource>().Play(); // could just not do that & move it to regular parent but whatev idc
+
+                gameObjects[3].GetComponent<AudioSource>().pitch = 0.8f * gameSpeed;
 
                 break;
             case mcg.Dance:
@@ -1022,6 +1067,11 @@ public class MicrogameScript : MonoBehaviour
 
                 gameObjects[2].transform.GetChild(1).GetComponent<Animator>().speed = gameSpeed;
                 gameObjects[2].transform.GetChild(2).GetComponent<Animator>().speed = gameSpeed;
+
+                gameObjects[9].GetComponent<Animator>().speed = gameSpeed;
+                gameObjects[10].GetComponent<Animator>().speed = gameSpeed;
+
+                gameObjects[11].GetComponent<AudioSource>().pitch = gameSpeed;
 
                 break;
             case mcg.Yap:
@@ -1084,7 +1134,7 @@ public class MicrogameScript : MonoBehaviour
 
                 gameObjects[20].SetActive(false);
 
-                gameObjects[12].SetActive(false);
+                gameObjects[12].GetComponent<CanvasGroup>().alpha = 0;
 
                 break;
             case mcg.Boss1:
@@ -1126,6 +1176,7 @@ public class MicrogameScript : MonoBehaviour
                     {
                         bools[2] = true;
                         gameObjects[6].SetActive(true);
+                        audioPlay(gameObjects[10].GetComponent<AudioSource>());
                     } // miss
                 }
                 break;
@@ -1133,6 +1184,9 @@ public class MicrogameScript : MonoBehaviour
                 if (inputName == "Space")
                 {
                     bools[0] = true;
+
+                    gameObjects[12].GetComponent<AudioSource>().Play();
+
                     if (Mathf.FloorToInt(floats[0]) == ints[0])
                     {
                         manager.toggleWin(true);
@@ -1164,6 +1218,7 @@ public class MicrogameScript : MonoBehaviour
 
                     if (bools[3] != mode && mode)
                     {
+                        gameObjects[9].GetComponent<AudioSource>().Play();
                         ints[0] = (int)Mathf.Repeat(ints[0] - Mathf.Sign(obj.action.ReadValue<Vector2>().y), 4);
 
                         // update visual
@@ -1200,7 +1255,7 @@ public class MicrogameScript : MonoBehaviour
 
                     gameObjects[5].SetActive(!mode);
 
-                    gameObjects[7].GetComponent<AudioSource>().pitch = gameSpeed + Random.Range(-0.2f, 0.2f); // must be
+                    gameObjects[7].GetComponent<AudioSource>().pitch = Random.Range(0.8f, 1.2f) * gameSpeed; // must be done this way cause randomized pitch
                     gameObjects[7].GetComponent<AudioSource>().Play();
                 }
                 else if (inputName == "MouseMove" && bools[0])
@@ -1323,6 +1378,12 @@ public class MicrogameScript : MonoBehaviour
 
                                 audioPlay(gameObjects[7].GetComponent<AudioSource>());
                                 audioPlay(gameObjects[8].GetComponent<AudioSource>());
+
+                                gameObjects[9].GetComponent<Animator>().enabled = true;
+                                gameObjects[10].GetComponent<Animator>().enabled = true;
+
+                                gameObjects[11].GetComponent<AudioSource>().Play();
+                                GetComponent<AudioSource>().volume = 0.5f;
 
                                 break;
                             } // victory
