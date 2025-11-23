@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.Windows;
 
 [System.Serializable]
 public class microgame
@@ -523,6 +522,9 @@ public class MicrogameManager : MonoBehaviour
                 currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[randChoice].SetActive(true); // set character as active
                 currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
                 break; // choose shake target randomly (Pongon / Shibbi)
+            case "Interrogate!":
+                currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[2].GetComponentInChildren<TMP_Text>().text = (new string[] { "Beat it!", "Hit the road 'mow!", "ACCESS DENIED.", "Nuh uh!", "You should leave.", "get off my f???ing house ass hole" })[Random.Range(0, 6)];
+                break;
                 /*case "Chase!":
 
                     MicrogameScript mcg = currentMg.ownGO.GetComponent<MicrogameScript>();

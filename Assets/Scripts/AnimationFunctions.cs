@@ -10,7 +10,7 @@ public class AnimationFunctions : MonoBehaviour
     private bool applyVelo;
     private float changeDire = 1f, gameSpeed;
 
-    public bool isTouhou, doDate, iaMainMenuStuff;
+    public bool isTouhou, doDate, iaMainMenuStuff, isInterrogInterface;
     private void Awake()
     {
         if (!iaMainMenuStuff)
@@ -20,6 +20,8 @@ public class AnimationFunctions : MonoBehaviour
         }
 
         if (doDate) objects[0].GetComponent<TMP_Text>().text = System.DateTime.Now.Day + "/" + System.DateTime.Now.Month + "/" + System.DateTime.Now.Year;
+
+        if (isInterrogInterface) GetComponent<Animator>().speed = Random.Range(0.2f, 0.5f) * GameObject.Find("MicrogameManager").GetComponent<MicrogameManager>().gameSpeed;
     }
     public void disableObject(int index)
     {

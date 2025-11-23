@@ -375,6 +375,79 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Drive:
                 break;
             case mcg.LetIn:
+
+                // int 0: current selected option (interrogation, let in, don't let in) // (microgame always results in failure if let in / not let in without interrogating)
+                // int 1: Pongon's choice (food / not food dialogue)
+                // int 2: slowprint index
+                // int 3: talk sound delay
+                // int 4: Shibbi's choice (food / not food)
+
+                // float 0: slowprint progress
+
+                // bool 0: has interrogated
+                // bool 1: is game finished
+                // bool 2: old mode (multiinput prevention for movement)
+
+                // string 0: slowprint target
+                // string 1: interrogation text
+
+                // GOs 0-2: option buttons
+                // GO 3: slowprint text & sound
+                // GO 4: choice move sound
+                // GO 5: choice sound
+                // GO 6: Pongon vis
+                // GO 7: Pongon burn vis
+                // GOs 8-9: burn sounds
+                // GO 10: hint food
+                // GO 11: hint no food
+                // GO 12: eat sound
+                // GO 13: door sound
+
+                if (ints[2] != strings[0].Length)
+                {
+                    int lastIndex = ints[2];
+
+                    floats[0] -= deltaTime;
+
+                    /*if (strings[0] == "I just bought this game from Gamerhalt! It's called: GD Colon Gets Killed Behind a Convenience Store in Super Tokyo at 3:46 AM, Reincarnates as a Fumo Plushie of Himself and Kills The Supreme God of Hyperdeath!"
+                        || strings[0] == "I was just wondering if you wanted to HANG out with me and play with touys and fill our brains with youtube SHORTS and play Marlok the Wizard for the PC?"
+                        || strings[0] == "I was just wondering if you wanted to HANG out with me and let me eat all your food and fill our bellies with DIET cola and play Marlok the Wizard for the PC?") floats[0] -= deltaTime * 2f; // abominable but i don't care; dialogue goes faster on those longer lines//*/ // ...NOT!
+
+                    if (strings[0].Length > 120) floats[0] -= deltaTime * 2f; // dialogue goes faster on longer lines
+
+                    for (; floats[0] < 0 && ints[2] != strings[0].Length; floats[0] += 0.16f / 3f, ints[2]++, ints[3]++)
+                    {
+                        if (ints[3] == 3)
+                        {
+                            ints[3] = 0;
+                            if (ints[2] < strings[0].Length - 3) audioPlay(gameObjects[3].GetComponentInChildren<AudioSource>());
+                        }
+                    } // pretty much just for incrementing relevant values and playing the talk sound
+                    if (lastIndex != ints[2])
+                    {
+                        string colInvis = "#00", colHalfTrans = "#80";//, colMain = "#69FFB2FF";
+                        //string output = "<color=" + colMain + ">";
+                        string output = default;
+
+                        for (int i = 0; i < Mathf.Clamp(ints[2], 0, strings[0].Length); i++)
+                        {
+                            output += strings[0][i];
+                        }
+                        output += "<alpha=" + colHalfTrans + ">";
+                        for (int i = ints[2]; i < Mathf.Clamp(ints[2] + 1, 0, strings[0].Length); i++)
+                        {
+                            output += strings[0][Mathf.Max(i, 0)];
+                        }
+                        output += "</color><alpha=" + colInvis + ">";
+                        for (int i = ints[2] + 1; i < strings[0].Length; i++)
+                        {
+                            output += strings[0][Mathf.Max(i, 0)];
+                        }
+
+                        gameObjects[3].GetComponentInChildren<TMP_Text>().text = output + "</color>";
+                    } // update text
+                }
+
                 break;
             case mcg.Chase:
 
@@ -994,6 +1067,71 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Drive:
                 break;
             case mcg.LetIn:
+
+                //Random.seed = System.DateTime.Now.Millisecond;
+
+                ints = new int[5];
+                ints[1] = Random.Range(0, 2) + 1; // 1: let in; 2: don't let in (if on press current selected option == correct choice (0 will always just show the interrogation text))
+                ints[4] = Random.Range(0, 2) + 1;
+                //print(new string[] { "Don't let him in if he'll eat all my food, like the last time...", "I invited Pongon for dinner, I'll let him in only if he's hungry..." }[ints[4] - 1]);
+                gameObjects[10].SetActive(ints[4] - 1 == 0);
+                gameObjects[11].SetActive(ints[4] - 1 == 1);
+
+                floats = new float[1];
+                bools = new bool[3];
+
+                strings = new string[2];
+                string[] intro = new string[] { "Are you guys going Trick or Treating?", "Hi Shibbi!", "Hello!", "Hi there!", "Hey!", "Hey! Listen!" };
+                strings[0] = intro[Random.Range(0, intro.Length)];
+
+                string[] interText = default;
+                if (ints[1] == 1)interText = new string[] { "I bought batteries from the store, like you asked!",
+                "oops i sneezed on my pineapple",
+                "Shibbi I know this is unrelated but I need your help right now.",
+                "Would you like to sign my petition on letting non-hungry individuals like me into your house?",
+                "Pongon, Pongon, you can call me Pongon. Lime hair, cool cow, please open the door now~",
+                "I'm old!",
+                "I'm hungry... Not! I'm perpetually aging instead :)",
+                "Enough! My ship sails in the morning. I just wonder what you're up to!",
+                "Shibbi you done did cook up!... A nice outfit I heard! Can I see it??",
+                "I'll steal the frags and destroy you in Unreal. Signed, Polygon Donut.",
+                "Pongon Donute, Room Service. Here to be a stereotypical catgirl maid and just look cute doing nothing.",
+                "Shibbi gamer in the flesh... Or rather behind a locked door. Wanna play some board games?",
+                "Shibbi. Listen carefully. You need my help, and I need your help.",
+                "The Moon haunts me.",
+                "What a horrible night to have a curse.",
+                "The Donut jester does not play, but gently knocks the door. In the court of the Dancing Queeeeeeeeeeeeeeeeen, aaa aaaaahh...",
+                "I just bought this game from Gamerhalt! It's called: GD Colon Gets Killed Behind a Convenience Store in Super Tokyo at 3:46 AM, Reincarnates as a Fumo Plushie of Himself and Kills The Supreme God of Hyperdeath!",
+                "I was just wondering if you wanted to HANG out with me and play with touys and fill our brains with youtube SHORTS and play Marlok the Wizard for the PC?",
+                "im SOOOOO bored",
+                "I have some silly toys and board games to review! Wanna help?"}; // not food
+                else interText = new string[] { "I bought cashews from the store, but i ate them on the way and i'm still hungry!",
+                "oops i sneezed on my pineapple... haha jk, I'm hungry!",
+                "Shibbi I know this is unrelated but I need your food right now.",
+                "Would you like to sign my petition on letting hungry individuals like me into your house?",
+                "Pongon, Pongon, you can call me Pongon. Lime hair, peckish, you should let me in, please~",
+                "I'm old... Not! I'm hungry instead :)",
+                "I'm very hungry!",
+                "Enough! My ship sails in the morning. I wonder what's for dinner...",
+                "Shibbi you done did cook up!... A stew, I smell?.. Can I have some??",
+                "I'll eat all the food and destroy your fridge. Signed, Polygon Donut.",
+                "Pongon Donute, Dish Cleaning Service. Here to clean the dinner from your plates.",
+                "Shibbi's dinner in the flesh... Or rather behind a locked door.",
+                "Shibbi. Listen carefully. You need my help, and I need your dinner.",
+                "The hunger haunts me...",
+                "What a horrible night to have a hunger.",
+                "The Donut jester does not play, but gently knocks the door. In the court of the Dinner Queeeeeeeeeeeeeeeeen, huu uungryy...",
+                "I just bought this game from Gamerhalt! It's called: Shibbi Lets Pongon In For Dinner 3!",
+                "I was just wondering if you wanted to HANG out with me and let me eat all your food and fill our bellies with DIET cola and play Marlok the Wizard for the PC?",
+                "im SOOOOO hungry",
+                "I have some silly toys and all your food to \"review\"! Wanna help?" }; // food
+                strings[1] = interText[Random.Range(0, interText.Length)]; // interrogation text
+
+                // strings[1] = "I just bought this game from Gamerhalt! It's called: GD Colon Gets Killed Behind a Convenience Store in Super Tokyo at 3:46 AM, Reincarnates as a Fumo Plushie of Himself and Kills The Supreme God of Hyperdeath!";
+
+                audioPlay(gameObjects[3].GetComponentInChildren<AudioSource>());
+
+                gameObjects[6].GetComponent<Animator>().Play(0);
                 break;
             case mcg.Chase:
 
@@ -1295,6 +1433,114 @@ public class MicrogameScript : MonoBehaviour
             case mcg.Drive:
                 break;
             case mcg.LetIn:
+                if (bools[1]) return;
+
+                if (!mode) bools[2] = false;
+
+                if (mode)
+                {
+                    if (inputName == "Movement" && !bools[2])
+                    {
+                        audioPlay(gameObjects[4].GetComponent<AudioSource>());
+
+                        bools[2] = true;
+                        Vector2 arrowVec = obj.ReadValue<Vector2>();
+                        if (arrowVec.x != 0)
+                        {
+                            if (ints[0] != 0)
+                            {
+                                ints[0]++;
+                                if (ints[0] > 2) ints[0] = 1;
+                            }
+                        } // horizontal
+                        else
+                        {
+                            if (ints[0] == 0) ints[0] = 1;
+                            else ints[0] = 0;
+                        }// vertical
+
+                        for (int i = 0; i < 3; i++)
+                        {
+                            //gameObjects[i].SetActive(i == ints[0]);
+                            gameObjects[i].transform.localScale = Vector3.one;
+                            gameObjects[i].GetComponentInChildren<Image>().color = new Color32(0, 0, 0, 224);
+                            if (i == ints[0])
+                            {
+                                gameObjects[i].transform.localScale = Vector3.one * 1.1f;
+                                gameObjects[i].GetComponentInChildren<Image>().color = new Color32(32, 32, 32, 240);
+                            }
+                        }
+                    }
+                    else if (inputName == "Space")
+                    {
+                        audioPlay(gameObjects[5].GetComponent<AudioSource>());
+
+                        // choice dependent stuff
+
+                        if (ints[0] == 0)
+                        {
+                            bools[0] = true;
+
+                            strings[0] = strings[1];
+                            gameObjects[3].GetComponent<TMP_Text>().text = default;
+                            ints[2] = 0;
+                            ints[3] = 0;
+                            floats[0] = 0.16f / 3f;
+                            audioPlay(gameObjects[3].GetComponentInChildren<AudioSource>());
+                            gameObjects[6].GetComponent<Animator>().Play(0);
+                        } // interrogation
+                        else
+                        {
+                            bools[1] = true;
+
+                            if (ints[0] == 2)
+                            {
+                                strings[0] = new string[] { "I guess that's a no...", "I suppose that's a no." }[Random.Range(0, 2)];
+                                gameObjects[6].SetActive(false);
+                                gameObjects[7].SetActive(true);
+                                audioPlay(gameObjects[8].GetComponent<AudioSource>());
+                                audioPlay(gameObjects[9].GetComponent<AudioSource>());
+                            } // not letting in; Pongon burns
+                            else
+                            {
+                                strings[0] = new string[] { "Neato!", "Tubular!", "Absolutely tubular!" }[Random.Range(0, 3)];
+                                gameObjects[6].SetActive(false);
+                                audioPlay(gameObjects[13].GetComponent<AudioSource>());
+                            } // letting in
+
+                            gameObjects[3].GetComponent<TMP_Text>().text = default;
+                            ints[2] = 0;
+                            ints[3] = 0;
+                            floats[0] = 0.16f / 3f;
+                            audioPlay(gameObjects[3].GetComponentInChildren<AudioSource>());
+
+                            if (!bools[0])
+                            {
+                                print("Failure! (no interrogation)");
+                                manager.toggleWin(false);
+                                manager.lowerTimer(4);
+                                if (ints[4] == 1 && ints[0] == 1) audioPlay(gameObjects[12].GetComponent<AudioSource>());
+                            } // Failure (didn't interrogate)
+                            else
+                            {
+                                if (ints[1] == ints[4] && ints[0] == 1 || ints[1] != ints[4] && ints[0] == 2)
+                                {
+                                    print("Success!");
+                                    manager.toggleWin(true);
+                                    manager.lowerTimer(4);
+                                    if (ints[4] == 2 && ints[0] == 1) audioPlay(gameObjects[12].GetComponent<AudioSource>());
+                                } // Success (Player's choice is Shibbi's choice)
+                                else
+                                {
+                                    print("Failure!");
+                                    manager.toggleWin(false);
+                                    manager.lowerTimer(4);
+                                    if (ints[4] == 1 && ints[0] == 1) audioPlay(gameObjects[12].GetComponent<AudioSource>());
+                                } // Failure (wrong choice)
+                            }
+                        } // choice
+                    }
+                }
                 break;
             case mcg.Chase:
                 if (inputName == "Movement")
