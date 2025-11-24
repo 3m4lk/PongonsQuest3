@@ -373,6 +373,189 @@ public class MicrogameScript : MonoBehaviour
                 //GameObject.Find("teText").GetComponent<TMP_Text>().text = floats[0] + "";
                 break;
             case mcg.Drive:
+
+                // float 0: wheel angle
+                // float 1: vertical position
+                // float 2: horizontal position
+                // float 3: wheel release return time
+                // float 4: wheel release og point
+                // float 5: horizontal position target
+                // float 6: Pongon blast timer
+                // float 7: Fuji crumble timer
+                // float 8: Pongon's horizontal position (for blast)
+                // float 9: Pongon's LOCAL horizontal position (for blast rotation)
+
+                // bool 0: is mouse held
+                // bool 1: has gone off tracks (if Mathf.Abs(horizontalPosition) > 0.05f && !bools[1]: bools[1] = true; gameObjects[1].SetActive(true))
+                // bool 2: has eyes emoji been triggered
+                // bool 3: stage 1 completed?
+                // bool 4: stage 1 failed?
+
+                // curve 0: wheel release return curve
+                // curve 1: Pongon blast curve (scale)
+                // curve 2: Pongon blast curve (horizontal)
+                // curve 1: Pongon blast curve (vertical)
+
+                // transform 0: wheel
+                // transform 1: arm
+                // transform 2: ground
+                // transform 3: billboards parent
+                // transform 4: camera
+                // transform 5: ground reverse
+                // transform 6: billboards parent reverse
+                // transform 7: fuji bg
+                // transform 8: fuji bg reverse
+                // transform 9: fuji mountain
+                // transform 10: fuji pos 0
+                // transform 11: fuji pos 1
+                // transform 12: Pongon blast target
+
+                // GO 0: interior (for hit animation)
+                // GO 1: dust effects & derailment sound (train derailment, see bools[1] note)
+                // GO 2: Pongon
+                // GO 3: Pongon eyes emoji
+                // GO 4: air freshener physics
+                // GO 5: air freshener vis
+                // GO 6: Pongon blast vis
+                // GO 7: Pongon blast explosion
+
+
+                gameObjects[5].transform.localRotation = gameObjects[4].transform.localRotation;
+
+                if (!bools[0])
+                {
+                    floats[3] = Mathf.Max(floats[3] - deltaTime, 0f);
+                    floats[0] = Mathf.Lerp(0.5f, floats[4], curves[0].Evaluate(floats[3] * 2f));
+                }
+
+                Physics2D.gravity = new Vector2((floats[0] - 0.5f) * 2f, -1f).normalized * 9.81f;
+
+                //GameObject.Find("gravRef").transform.localPosition = Physics2D.gravity * 3f;
+
+                transforms[4].localRotation = Quaternion.Euler(-30f, Mathf.Lerp(-20f, 20f, floats[0]), Mathf.Lerp(5f, -5f, floats[0]));
+                floats[2] = Mathf.Clamp(floats[2] + (floats[0] - 0.5f) * deltaTime * 3f, 0f, 1f);
+
+                if (!bools[1] && (floats[2] > 0.57f || floats[2] < 0.43f))
+                {
+                    bools[1] = true;
+                    //print("derail!");
+                    gameObjects[1].GetComponent<Animator>().speed = gameSpeed;
+                    gameObjects[1].SetActive(true);
+                    audioPlay(gameObjects[1].GetComponent<AudioSource>());
+                    // play the sounds as well!
+                }
+
+                transforms[2].localPosition = new Vector3(Mathf.Lerp(4f, -4f, floats[2]), -11.1f, 4.5f);
+                transforms[5].localPosition = new Vector3(Mathf.Lerp(4f, -4f, floats[2]), transforms[5].localPosition.y, transforms[5].localPosition.z);
+
+                transforms[7].localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(5f, -5f, floats[0]));
+                transforms[8].localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(-1.5f, 1.5f, floats[0]));
+
+                for (int i = 0; i < transforms[3].childCount; i++)
+                {
+                    transforms[3].GetChild(i).rotation = Quaternion.Euler(15f, 0f, 0f);
+                    transforms[6].GetChild(i).rotation = Quaternion.Euler(195f, 180f, 0f);
+                }
+
+                transforms[0].localRotation = Quaternion.Euler(0, 0, Mathf.Lerp(90f, -45f, floats[0]));
+                transforms[1].localRotation = Quaternion.Euler(0, 0, Mathf.Lerp(-70f, -16f, floats[0]));
+
+                floats[1] = Mathf.Min(floats[1] + deltaTime, 10f); // change to min later
+
+                transforms[2].localRotation = Quaternion.Euler(floats[1] * 45f, 180f, 90f);
+                transforms[5].localRotation = Quaternion.Euler(-floats[1] * 45f - 30f, 180f, 90f);
+                transforms[7].localPosition = new Vector2(105f, Mathf.Lerp(90f, 160f, floats[1] * 0.1f));
+                transforms[8].localPosition = new Vector2(515f, Mathf.Lerp(305f, 355f, floats[1] * 0.1f));
+
+                if (!bools[3])
+                {
+                    if (!bools[2] && ((floats[2] > floats[5] && floats[5] > 0.5f) || (floats[2] < floats[5] && floats[5] < 0.5f)) && floats[1] > 3.7f)
+                    {
+                        bools[2] = true;
+                        // toggle eyes emoji
+                        gameObjects[2].SetActive(false);
+                        gameObjects[3].SetActive(true);
+                        audioPlay(gameObjects[3].GetComponent<AudioSource>());
+                    }
+
+                    // 3.7f -> 3.9f
+
+                    if (floats[1] >= 4.3f && floats[1] <= 4.45f && (floats[2] < 0.2f && floats[5] < 0.5f || floats[2] > 0.8f && floats[5] > 0.5f))
+                    {
+                        bools[3] = true;
+                        manager.toggleWin(true);
+                        gameObjects[2].SetActive(false);
+                        gameObjects[3].SetActive(false);
+                        gameObjects[0].GetComponent<Animator>().SetTrigger("driveHit");
+                        gameObjects[4].GetComponent<Rigidbody2D>().angularVelocity -= Mathf.Sign(floats[5] - 0.5f) * 4000f;
+
+                        floats[8] = gameObjects[3].transform.position.x;
+                        floats[9] = gameObjects[3].transform.localPosition.x;
+
+                        gameObjects[6].transform.position = gameObjects[2].transform.position;
+                        gameObjects[6].SetActive(true);
+                        audioPlay(gameObjects[6].GetComponent<AudioSource>());
+
+                        floats[6] = 2.2f;
+
+                        print("Success!");
+                    }
+                    else if (floats[1] > 4.45f)
+                    {
+                        bools[3] = true;
+                        print("Failure...");
+                        gameObjects[2].SetActive(false);
+                        gameObjects[3].SetActive(false);
+                        bools[4] = true;
+                        // toggle Pongon back sprite
+                    }
+                }
+                else if (!bools[4])
+                {
+                    // when Pongon hits Mt. Fuji, start shaking animation in transforms[9] & lerp it from transforms[10] to transforms[11] (localPos & localRot)
+                    if (floats[7] == 0)
+                    {
+                        floats[6] -= deltaTime;
+
+                        Vector3 blastPos = Vector3.up * Mathf.LerpUnclamped(transforms[12].localPosition.y, -1.28f, curves[3].Evaluate(floats[6] / 2.2f));
+
+                        blastPos.z = Mathf.Lerp(transforms[12].localPosition.z, 1.2f, curves[1].Evaluate(floats[6] / 2.2f));
+                        // do blastPos.x based on Pongon's initial position & apply curve
+                        gameObjects[6].transform.localPosition = blastPos;
+                        blastPos = gameObjects[6].transform.position;
+
+                        blastPos.x = Mathf.LerpUnclamped(transforms[12].position.x, floats[8], curves[2].Evaluate(floats[6] / 2.2f));
+
+                        gameObjects[6].transform.position = blastPos;
+                        gameObjects[6].transform.localScale = Vector3.one * curves[1].Evaluate(floats[6] / 2.2f);
+                        //gameObjects[6].transform.localScale = Vector3.zero;
+                        // also do rotation lerping; linear, Pongon's position-dependent
+
+                        gameObjects[6].transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, Mathf.Lerp(40f, -470f, floats[6] / 2.2f) * Mathf.Sign(floats[9]));
+
+                        if (floats[6] <= 0 && !transforms[9].GetComponent<Animator>().enabled)
+                        {
+                            transforms[9].GetComponent<Animator>().enabled = true;
+                            floats[7] = 1.5f - floats[6];
+
+                            gameObjects[6].SetActive(false);
+                            gameObjects[7].SetActive(true);
+                            audioPlay(gameObjects[7].GetComponent<AudioSource>(), 0.4f);
+                        }
+                    }
+                    else
+                    {
+                        floats[7] = Mathf.Max(floats[7] - deltaTime, 0f);
+
+                        transforms[9].localPosition = Vector2.Lerp(transforms[11].localPosition, transforms[10].localPosition, floats[7] / 1.2f);
+                        transforms[9].localRotation = Quaternion.Lerp(transforms[11].localRotation, transforms[10].localRotation, floats[7] / 1.2f);
+                    }
+                }
+
+                // if horPos is above 0.85f (in direction specified) && vertPos > 6.7f, change Pongon to eyes emoji
+
+                //GameObject.Find("posText").GetComponent<TMP_Text>().text = "vertPos: " + floats[1] + "\nhorPos: " + floats[2];
+
                 break;
             case mcg.LetIn:
 
@@ -483,6 +666,12 @@ public class MicrogameScript : MonoBehaviour
                 gameObjects[0].GetComponent<AnimationFunctions>().setVelo(new Vector2(floats[0], floats[1]) * gameSpeed * 190f);
                 break;
             case mcg.Pray:
+
+                // 0: hold space to bring hands up
+                // 1: hold mouse at left / right position and hold it till opposite hand moves into place
+                // 2: repeat with opposite side
+                // 3: release space
+
                 break;
             case mcg.Lag:
 
@@ -933,6 +1122,9 @@ public class MicrogameScript : MonoBehaviour
     public void startMG()
     {
         gameSpeed = manager.gameSpeed;
+
+        Physics2D.gravity = Vector2.down * 9.81f;
+
         switch (microgameType)
         {
             case mcg.Parry:
@@ -1065,6 +1257,41 @@ public class MicrogameScript : MonoBehaviour
                 floats[1] = 0.7f;
                 break;
             case mcg.Drive:
+
+                floats = new float[10];
+                floats[2] = 0.5f;
+
+                bools = new bool[5];
+
+                for (int i = 0; i < transforms[3].childCount; i++)
+                {
+                    transforms[3].GetChild(i).localPosition += Vector3.right * Random.Range(-1f, 1f) + transforms[3].GetChild(i).up * Random.Range(-0.5f, 0f);
+                    transforms[3].GetChild(i).localScale = Vector3.one * Random.Range(0.85f, 1.2f);
+                    transforms[6].GetChild(i).localPosition = transforms[3].GetChild(i).localPosition;
+                    transforms[6].GetChild(i).localScale = transforms[3].GetChild(i).localScale;
+                }
+
+                print("<color=red><b>SET SPEED AND START ALL ANIMATORS (interior)");
+
+                gameObjects[0].GetComponent<Animator>().speed = gameSpeed;
+                gameObjects[0].GetComponent<Animator>().enabled = true;
+
+                float horPongonPos = -4f;
+                if (Random.Range(0, 2) == 0)
+                {
+                    floats[5] = 0.7f;
+                }
+                else
+                {
+                    horPongonPos = 4f;
+                    floats[5] = 0.3f;
+                }
+
+                gameObjects[2].transform.localPosition = new Vector3(-10.01f, -horPongonPos, 0f);
+                gameObjects[3].transform.localPosition = new Vector3(-10.01f, -horPongonPos, 0f);
+
+                gameObjects[5].transform.localRotation = gameObjects[4].transform.localRotation;
+
                 break;
             case mcg.LetIn:
 
@@ -1431,6 +1658,25 @@ public class MicrogameScript : MonoBehaviour
                 }
                 break;
             case mcg.Drive:
+
+                if (inputName == "LClick")
+                {
+                    bools[0] = mode;
+                    if (!mode)
+                    {
+                        floats[3] = 0.5f;
+                        floats[4] = floats[0];
+                    }
+                }
+                else if (inputName == "MouseMove" && bools[0])
+                {
+                    float xMove = obj.action.ReadValue<Vector2>().x;
+
+                    floats[0] = Mathf.Clamp(floats[0] + xMove * 0.0006f, 0f, 1f);
+                }
+
+                // mouse for movement
+
                 break;
             case mcg.LetIn:
                 if (bools[1]) return;
@@ -1777,9 +2023,9 @@ public class MicrogameScript : MonoBehaviour
             newBullets.SetActive(true);
         }
     }
-    void audioPlay(AudioSource input)
+    void audioPlay(AudioSource input, float pitch = 1f)
     {
-        input.pitch = gameSpeed;
+        input.pitch = pitch * gameSpeed;
         input.Play();
     }
 }
