@@ -10,7 +10,7 @@ public class AnimationFunctions : MonoBehaviour
     private bool applyVelo;
     private float changeDire = 1f, gameSpeed;
 
-    public bool isTouhou, doDate, iaMainMenuStuff, isInterrogInterface;
+    public bool isTouhou, doDate, iaMainMenuStuff, isInterrogInterface;//, isPrayBubble;
     private void Awake()
     {
         if (!iaMainMenuStuff)
@@ -133,5 +133,19 @@ public class AnimationFunctions : MonoBehaviour
     public void playSound(int index)
     {
         objects[index].GetComponent<AudioSource>().Play();
+    }
+    public void prayEnter(int index)
+    {
+        //if (isPrayBubble) print("iiii " + index);
+        objects[0].GetComponent<MicrogameScript>().bools[index] = true;
+    }
+    public void prayExit(int index)
+    {
+        //if (isPrayBubble) print("eeee " + index);
+        objects[0].GetComponent<MicrogameScript>().bools[index] = false;
+    }
+    public void prayPopEnter()
+    {
+        GetComponent<Animator>().SetTrigger("pop");
     }
 }

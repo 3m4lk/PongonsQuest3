@@ -14,13 +14,6 @@ public class microgame
     [Header("0: Keyboard;\n1: Arrows;\n2: Space;\n3: Mouse")]
     public bool[] controls = new bool[4] { false, false, false, false };
 
-    [Header("Microgame-specific parameters")]
-    public string[] stringVars;
-    public int[] intVars;
-    public float[] floatVars;
-    public bool[] boolVars;
-    public Transform[] transforms;
-
     [Space]
     public bool isEPG;
 
@@ -39,32 +32,6 @@ public class microgame
             output.controls[i] = controls[i];
         }
 
-        output.stringVars = new string[stringVars.Length]; // stringVars
-        for (int i = 0; i < stringVars.Length; i++)
-        {
-            output.stringVars[i] = stringVars[i];
-        }
-        output.intVars = new int[intVars.Length]; // intVars
-        for (int i = 0; i < intVars.Length; i++)
-        {
-            output.intVars[i] = intVars[i];
-        }
-        output.floatVars = new float[floatVars.Length]; // floatVars
-        for (int i = 0; i < floatVars.Length; i++)
-        {
-            output.floatVars[i] = floatVars[i];
-        }
-        output.boolVars = new bool[boolVars.Length]; // boolVars
-        for (int i = 0; i < boolVars.Length; i++)
-        {
-            output.boolVars[i] = boolVars[i];
-        }
-        output.transforms = new Transform[transforms.Length]; // transforms
-        for (int i = 0; i < transforms.Length; i++)
-        {
-            output.transforms[i] = transforms[i];
-        }
-
         output.isEPG = isEPG;
 
         return output;
@@ -79,6 +46,7 @@ public class MicrogameManager : MonoBehaviour
     public Animator bgAnimator, cableAnim;
 
     [Space]
+    public bool devMode;
     public int currentMicrogameIndex;
     [Tooltip("swap the Evil Polygon Donut microgame with this index (so this microgame is always at this index no matter what)")]
     public int evilPGIndex;
@@ -98,8 +66,6 @@ public class MicrogameManager : MonoBehaviour
 
     public GameObject[] controlIcons;
     public TMP_Text gameName, stageCount;
-
-    public bool devMode;
 
     [Space]
     public float transAnimTime, transAnimProgress, transAnimDire = -1f;
@@ -521,6 +487,13 @@ public class MicrogameManager : MonoBehaviour
                 int randChoice = Random.Range(0, 2);
                 currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[randChoice].SetActive(true); // set character as active
                 currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[2 + randChoice].SetActive(true); // set drink outcome as active
+
+                if (Random.Range(0, 2) == 1)
+                {
+                    currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[2 + randChoice].GetComponent<Image>().enabled = false;
+                    currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[8 + randChoice].GetComponent<Image>().enabled = true;
+                }
+
                 break; // choose shake target randomly (Pongon / Shibbi)
             case "Interrogate!":
                 currentMg.ownGO.GetComponent<MicrogameScript>().gameObjects[2].GetComponentInChildren<TMP_Text>().text = (new string[] { "Beat it!", "Hit the road 'mow!", "ACCESS DENIED.", "Nuh uh!", "You should leave.", "get off my f???ing house ass hole" })[Random.Range(0, 6)];

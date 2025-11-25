@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -307,6 +308,10 @@ public class MicrogameScript : MonoBehaviour
                 // GO 3: drink Shibbi
                 // GO 4: meter
                 // GO 5: cursor prompt
+                // GO 6: ???
+                // GO 7: ???
+                // GO 8: drink Pongon alt
+                // GO 8: drink Shibbi alt
 
                 // transform 0: shaker main
                 // transform 1 & 2: shaker main clamps
@@ -418,6 +423,7 @@ public class MicrogameScript : MonoBehaviour
                 // GO 5: air freshener vis
                 // GO 6: Pongon blast vis
                 // GO 7: Pongon blast explosion
+                // GO 8: honk sound
 
 
                 gameObjects[5].transform.localRotation = gameObjects[4].transform.localRotation;
@@ -428,7 +434,7 @@ public class MicrogameScript : MonoBehaviour
                     floats[0] = Mathf.Lerp(0.5f, floats[4], curves[0].Evaluate(floats[3] * 2f));
                 }
 
-                Physics2D.gravity = new Vector2((floats[0] - 0.5f) * 2f, -1f).normalized * 9.81f;
+                Physics2D.gravity = new Vector2(-(floats[0] - 0.5f) * 2f, -1f).normalized * 9.81f;
 
                 //GameObject.Find("gravRef").transform.localPosition = Physics2D.gravity * 3f;
 
@@ -671,6 +677,94 @@ public class MicrogameScript : MonoBehaviour
                 // 1: hold mouse at left / right position and hold it till opposite hand moves into place
                 // 2: repeat with opposite side
                 // 3: release space
+
+                // float 0: space held time
+                // float 1: hand L progress
+                // float 2: hand R progress
+
+                // bool 0: left bubble held
+                // bool 1: right bubble held
+                // bool 2: space held
+                // bool 3: finished
+
+                // transform 0: hands container
+                // transform 1: hand L
+                // transform 2: hand R
+
+                // GO 0: bubble container
+                // GO 1: bubble L
+                // GO 2: bubble R
+                // GO 3: prayer sound
+                // GO 4: hint visual
+                // GO 5: prayer finish sound
+
+                // curve 0: hands raise curve
+
+                if (bools[3])
+                {
+                    floats[0] = Mathf.Clamp(floats[0] - deltaTime * 0.5f, 0f, 1.5f);
+                    transforms[0].localPosition = Vector2.up * Mathf.Lerp(-170f, 0f, curves[0].Evaluate(floats[0] / 1.5f));
+                    gameObjects[0].GetComponent<CanvasGroup>().alpha = curves[0].Evaluate(floats[0] / 4.5f);
+                }
+                else
+                {
+                    if (bools[2])
+                    {
+                        floats[0] = Mathf.Clamp(floats[0] + deltaTime, 0f, 1.5f);
+
+                        if (floats[0] == 1.5f)
+                        {
+                            float prevVal = floats[1];
+                            if (bools[0])
+                            {
+                                floats[1] = Mathf.Clamp(floats[1] + deltaTime, 0f, 3f);
+
+                                if (floats[1] == 3f && prevVal != floats[1]) audioPlay(gameObjects[3].GetComponent<AudioSource>());
+                            }
+                            if (bools[1])
+                            {
+                                prevVal = floats[2];
+                                floats[2] = Mathf.Clamp(floats[2] + deltaTime, 0f, 3f);
+                                if (floats[2] == 3f && prevVal != floats[2]) audioPlay(gameObjects[3].GetComponent<AudioSource>());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (floats[1] == 3 && floats[2] == 3)
+                        {
+                            bools[3] = true;
+                            manager.toggleWin(true);
+                            manager.lowerTimer(3f);
+                            audioPlay(gameObjects[5].GetComponent<AudioSource>(), 0.75f);
+                            return;
+                        }
+                        floats[0] = Mathf.Clamp(floats[0] - deltaTime * 1.5f, 0f, 1.5f);
+
+                        floats[1] = Mathf.Clamp(floats[1] - deltaTime * 1.3f, 0f, 3f);
+                        floats[2] = Mathf.Clamp(floats[2] - deltaTime * 1.3f, 0f, 3f);
+
+                        bools[0] = false;
+                        bools[1] = false;
+                    }
+
+                    if (!bools[0] && floats[1] != 3) floats[1] = Mathf.Clamp(floats[1] - deltaTime * 1.3f, 0f, 3f); // difference between 1.5 in hands lower and 1.3 here is intentional
+                    if (!bools[1] && floats[2] != 3) floats[2] = Mathf.Clamp(floats[2] - deltaTime * 1.3f, 0f, 3f);
+
+                    transforms[1].localPosition = new Vector2(Mathf.Lerp(-150f, 0f, curves[0].Evaluate(floats[1] / 3f)), 0);
+                    transforms[2].localPosition = new Vector2(Mathf.Lerp(150f, 0f, curves[0].Evaluate(floats[2] / 3f)), 0);
+
+                    gameObjects[1].GetComponent<CanvasGroup>().alpha = 1f - (floats[1] / 3.1f);
+                    gameObjects[2].GetComponent<CanvasGroup>().alpha = 1f - (floats[2] / 3.1f);
+
+                    transforms[0].localPosition = Vector2.up * Mathf.Lerp(-170f, 0f, curves[0].Evaluate(floats[0] / 1.5f));
+                    transforms[0].GetComponent<AudioSource>().volume = curves[0].Evaluate(floats[0] / 1.5f);
+                    gameObjects[4].GetComponent<CanvasGroup>().alpha = curves[0].Evaluate(1f - (floats[0] / 0.75f));
+
+                    gameObjects[0].GetComponent<CanvasGroup>().alpha = curves[0].Evaluate(floats[0] / 1.5f);
+                    gameObjects[1].GetComponent<EventTrigger>().enabled = (floats[0] != 0);
+                    gameObjects[2].GetComponent<EventTrigger>().enabled = (floats[0] != 0);
+                }
 
                 break;
             case mcg.Lag:
@@ -1076,7 +1170,7 @@ public class MicrogameScript : MonoBehaviour
                             {
                                 ints[2]++;
                                 Destroy(allStars[i]);
-                                gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: " + ints[2] + "/128";
+                                gameObjects[12].GetComponentInChildren<TMP_Text>().text = "Shibbi and Pongon's\n    ower Level: " + ints[2] + "/96";
                                 gameObjects[13].GetComponent<AudioSource>().Play();
                                 // play item acquisition sound
                             }
@@ -1191,7 +1285,7 @@ public class MicrogameScript : MonoBehaviour
                 //string[] randomWrong = new string[] { "Jeanice", "Hollow Knight: Silksong", "Impala 64", "Minecraft Pocket Edition", "Shibbi", "Jorjor Well", "Dolygon Ponut", "Gaster", "Marlok", "Gorn", "Khrobaron", "Dedede", "K. Rool", "Gianni Matragrano", "Thermonuclear Reactor", "Wriggle Nightbug" }; // immediately swap ??? to a different randomly chosen one
 
                 string[] normalAnswers = new string[] { "Polygon Donut", "Pongon", "Mowmow", "pongondonute" };
-                string[] wrongAnswers = new string[] { "Poiygon Donut", "Pungon", "Movmow", "pongondonate" };
+                string[] wrongAnswers = new string[] { "Poiygon Donut", "Pungon", "Moumow", "pongondonate" };
 
                 string[] finalAnswers = new string[4];
                 for (int i = 0; i < finalAnswers.Length; i++)
@@ -1377,6 +1471,15 @@ public class MicrogameScript : MonoBehaviour
                 gameObjects[3].SetActive(true);
                 break;
             case mcg.Pray:
+
+                floats = new float[3];
+
+                bools = new bool[4];
+
+                gameObjects[0].GetComponent<Animator>().speed = gameSpeed;
+                transforms[0].GetComponent<AudioSource>().pitch = gameSpeed;
+                transforms[0].GetComponent<AudioSource>().Play();
+
                 break;
             case mcg.Lag:
 
@@ -1596,12 +1699,15 @@ public class MicrogameScript : MonoBehaviour
 
                     bools[3] = mode;
                 }
-                else if (inputName == "Space")
+                else if (inputName == "Space" && mode)
                 {
                     bools[0] = true;
                     manager.toggleWin(ints[0] == ints[1]);
                     gameObjects[5].SetActive(ints[0] == ints[1]);
                     gameObjects[6].SetActive(ints[0] != ints[1]);
+
+                    gameObjects[ints[0]].GetComponentInChildren<TMP_Text>().color = Color.red;
+                    gameObjects[ints[1]].GetComponentInChildren<TMP_Text>().color = Color.green;
 
                     // mark selector as correct / wrong (dependent on chosen option)
                     // highlight correct answer's text
@@ -1674,6 +1780,7 @@ public class MicrogameScript : MonoBehaviour
 
                     floats[0] = Mathf.Clamp(floats[0] + xMove * 0.0006f, 0f, 1f);
                 }
+                else if (inputName == "Space" && mode) audioPlay(gameObjects[8].GetComponent<AudioSource>());
 
                 // mouse for movement
 
@@ -1797,6 +1904,10 @@ public class MicrogameScript : MonoBehaviour
                 } // just move Shibbi
                 break;
             case mcg.Pray:
+
+                if (bools[3]) return;
+                if (inputName == "Space") bools[2] = mode;
+
                 break;
             case mcg.Lag:
                 if (inputName == "Space" && !bools[0] && floats[0] >= 1.633f && mode)
